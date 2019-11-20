@@ -1,5 +1,3 @@
-#include "pch.h"
-
 #include "part.h"
 
 Part::Part(const Vector3f jointPosition, const Vector3f jointAxis, bool isRotating)

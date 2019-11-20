@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "box_for_GJK.h"
 
 OBB_GJK::OBB_GJK(const Vector3f sizes, const Affine3f thisToPartSC)

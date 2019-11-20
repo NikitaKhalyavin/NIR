@@ -1,15 +1,11 @@
 #pragma once
 
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
+
+#include "../Src/correct_Eigen_include.h"
 #include <vector>
 
 #include "OBB.h"
 #include "GJK.h"
-
-using Eigen::Affine3f;
-using Eigen::Vector3f;
-using Eigen::Matrix3f;
 
 class Part
 {

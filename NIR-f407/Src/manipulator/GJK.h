@@ -1,8 +1,7 @@
 #pragma once
 
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
-#include <vector>
+
+#include "../Src/correct_Eigen_include.h"
 
 #include "box_for_GJK.h"
 #include "sphere_for_GJK.h"

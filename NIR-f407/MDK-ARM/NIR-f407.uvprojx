@@ -362,7 +362,7 @@
             <Rwpi>0</Rwpi>
             <wLevel>1</wLevel>
             <uThumb>0</uThumb>
-            <uSurpInc>0</uSurpInc>
+            <uSurpInc>1</uSurpInc>
             <uC99>1</uC99>
             <useXO>0</useXO>
             <v6Lang>1</v6Lang>
@@ -482,59 +482,7 @@
                       <MiscControls></MiscControls>
                       <Define></Define>
                       <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
-            </File>
-            <File>
-              <FileName>manipulator.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\Src\manipulator.cpp</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>2</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>1</vShortEn>
-                    <vShortWch>1</vShortWch>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath>..\..\..\eigen-eigen-323c052e1731</IncludePath>
+                      <IncludePath>..\..\..\..\eigen-eigen-323c052e1731</IncludePath>
                     </VariousControls>
                   </Cads>
                 </FileArmAds>
@@ -681,7 +629,7 @@
                   <MiscControls></MiscControls>
                   <Define></Define>
                   <Undefine></Undefine>
-                  <IncludePath>..\..\..\eigen-eigen-323c052e1731</IncludePath>
+                  <IncludePath>..\..\..\..\eigen-eigen-323c052e1731</IncludePath>
                 </VariousControls>
               </Cads>
               <Aads>
@@ -705,6 +653,16 @@
           </GroupOption>
           <Files>
             <File>
+              <FileName>correct_Eigen_include.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Src\correct_Eigen_include.h</FilePath>
+            </File>
+            <File>
+              <FileName>OBB.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\Src\manipulator\OBB.cpp</FilePath>
+            </File>
+            <File>
               <FileName>bounding_volume.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\Src\manipulator\bounding_volume.cpp</FilePath>
@@ -720,29 +678,14 @@
               <FilePath>..\Src\manipulator\cilinder_for_GJK.cpp</FilePath>
             </File>
             <File>
-              <FileName>GJK.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\Src\manipulator\GJK.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>main_interface.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\Src\manipulator\main_interface.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>OBB.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\Src\manipulator\OBB.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>part.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\Src\manipulator\part.cpp</FilePath>
-            </File>
-            <File>
               <FileName>sphere_for_GJK.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\Src\manipulator\sphere_for_GJK.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>GJK.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\Src\manipulator\GJK.cpp</FilePath>
             </File>
           </Files>
         </Group>

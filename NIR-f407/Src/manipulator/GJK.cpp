@@ -1,13 +1,52 @@
-#include "pch.h"
 #include "GJK.h"
-#include <vector>
 
 #define EPSILON 0.01f
 
-using namespace std;
+class Simplex
+{
+private:
+	Vector3f points[4];
+	int length;
+public:
+	Simplex() : length(0) {}
+	
+	int size() const
+	{
+		return length;
+	}	
+	
+	void add(const Vector3f & data)
+	{
+		if(length >= 3)
+			return;
+		length++;
+		points[length] = data;
+	}
+	
+	void remove(int index)
+	{
+		if(index > length)
+			return;
+		
+		if(index != length)
+		{
+			points[index] = points[length];
+		}
+		length--;
+	}
+	
+	Vector3f& operator[] (const int index)
+	{
+		if(index > length)
+			return points[length];	
+		return points[index];
+	}
+	
+};
 
-/*
-Vector3f getNearestSimplexPoint(std::vector<Vector3f>& simplex)
+
+
+Vector3f getNearestSimplexPoint(Simplex& simplex)
 {
 	switch (simplex.size())
 	{
@@ -86,12 +125,12 @@ Vector3f getNearestSimplexPoint(std::vector<Vector3f>& simplex)
 			return nearestPlanePoint;
 		}
 
-		std::vector<Vector3f> subSimplex1 = simplex;
-		subSimplex1.erase(subSimplex1.begin() + 0);
-		std::vector<Vector3f> subSimplex2 = simplex;
-		subSimplex2.erase(subSimplex2.begin() + 1);
-		std::vector<Vector3f> subSimplex3 = simplex;
-		subSimplex3.erase(subSimplex3.begin() + 2);
+		Simplex subSimplex1 = simplex;
+		subSimplex1.remove(0);
+		Simplex subSimplex2 = simplex;
+		subSimplex2.remove(1);
+		Simplex subSimplex3 = simplex;
+		subSimplex3.remove(2);
 
 		Vector3f firstNearest = getNearestSimplexPoint(subSimplex1);
 		Vector3f secondNearest = getNearestSimplexPoint(subSimplex2);
@@ -123,14 +162,14 @@ Vector3f getNearestSimplexPoint(std::vector<Vector3f>& simplex)
 	case 4:
 	{
 		
-		std::vector<Vector3f> subSimplex1 = simplex;
-		subSimplex1.erase(subSimplex1.begin() + 0);
-		std::vector<Vector3f> subSimplex2 = simplex;
-		subSimplex2.erase(subSimplex2.begin() + 1);
-		std::vector<Vector3f> subSimplex3 = simplex;
-		subSimplex3.erase(subSimplex3.begin() + 2);
-		std::vector<Vector3f> subSimplex4 = simplex;
-		subSimplex4.erase(subSimplex4.begin() + 3);
+		Simplex subSimplex1 = simplex;
+		subSimplex1.remove(0);
+		Simplex subSimplex2 = simplex;
+		subSimplex2.remove(1);
+		Simplex subSimplex3 = simplex;
+		subSimplex3.remove(2);
+		Simplex subSimplex4 = simplex;
+		subSimplex4.remove(3);
 
 		Vector3f firstNearest = getNearestSimplexPoint(subSimplex1);
 		Vector3f secondNearest = getNearestSimplexPoint(subSimplex2);
@@ -172,8 +211,8 @@ Vector3f getNearestSimplexPoint(std::vector<Vector3f>& simplex)
 	
   return Vector3f(0, 0, 0);
 }
-	*/
-static bool isInsideTriangle(const Vector3f& point, std::vector<Vector3f>& triangle)
+
+static bool isInsideTriangle(const Vector3f& point, Simplex& triangle)
 {
 	Vector3f lineDirection[3];
 	lineDirection[0] = triangle[2] - triangle[1];
@@ -198,12 +237,13 @@ static bool isInsideTriangle(const Vector3f& point, std::vector<Vector3f>& trian
 		trianglePointProj -= zeroProj;
 		if (trianglePointProj * checkingPointProj < -EPSILON)
 		{
-			triangle.erase(triangle.begin() + i);
+			triangle.remove(i);
 			return false;
 		}
 	}
 	return true;
 }
+
 
 template <typename T1, typename T2>
 static Vector3f getMaxExtremalPoint(const T1& volume1, const T2& volume2, const Affine3f& transform1,
@@ -216,7 +256,7 @@ static Vector3f getMaxExtremalPoint(const T1& volume1, const T2& volume2, const 
 }
 
 template <typename T1, typename T2>
-static bool evolveSimplex(std::vector<Vector3f>& simplex, const T1& volume1, const T2& volume2,
+static bool evolveSimplex(Simplex& simplex, const T1& volume1, const T2& volume2,
 	const Affine3f& transform1, const Affine3f& transform2, const Matrix3f& rotate1, const Matrix3f& rotate2)
 {
 	static Vector3f direction;
@@ -228,7 +268,7 @@ static bool evolveSimplex(std::vector<Vector3f>& simplex, const T1& volume1, con
 		direction = Vector3f(1, 0, 0);
 		Vector3f extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
 			rotate1, rotate2, direction);
-		simplex.push_back(extremalPoint);
+		simplex.add(extremalPoint);
 		break;
 	}
 	case 1:
@@ -236,7 +276,7 @@ static bool evolveSimplex(std::vector<Vector3f>& simplex, const T1& volume1, con
 		direction *= -1;
 		Vector3f extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
 			rotate1, rotate2, direction);
-		simplex.push_back(extremalPoint);
+		simplex.add(extremalPoint);
 		break;
 	}
 	case 2:
@@ -256,7 +296,7 @@ static bool evolveSimplex(std::vector<Vector3f>& simplex, const T1& volume1, con
 		}
 		Vector3f extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
 			rotate1, rotate2, direction);
-		simplex.push_back(extremalPoint);
+		simplex.add(extremalPoint);
 		break;
 	}
 	case 3:
@@ -275,7 +315,7 @@ static bool evolveSimplex(std::vector<Vector3f>& simplex, const T1& volume1, con
 
 		Vector3f extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
 			rotate1, rotate2, direction);
-		simplex.push_back(extremalPoint);
+		simplex.add(extremalPoint);
 		break;
 	}
 	case 4:
@@ -325,7 +365,7 @@ static bool evolveSimplex(std::vector<Vector3f>& simplex, const T1& volume1, con
 
 		if (maxProj > 0)
 		{
-			simplex.erase(simplex.begin() + deletingIndex);
+			simplex.remove(deletingIndex);
 
 			Vector3f nearest = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
 				rotate1, rotate2, maxProjNormal);
@@ -360,21 +400,22 @@ static bool evolveSimplex(std::vector<Vector3f>& simplex, const T1& volume1, con
 		int count = simplex.size();
 		for (int i = 0; i < count; i++)
 		{
-			simplex.erase(simplex.begin());
+			simplex.remove(0);
 		}
 		Vector3f zero(0, 0, 0);
-		simplex.push_back(zero);
+		simplex.add(zero);
 		return true;
 	}
 	}	
 	return false;
 }
 
+
 template <typename T1, typename T2>
 static Vector3f calculate(const T1& volume1, const T2& volume2, const Affine3f& transform1, 
 	const Affine3f& transform2, const Matrix3f& rotate1, const Matrix3f& rotate2)
 {
-	std::vector<Vector3f> simplex;
+	Simplex simplex;
 	bool exit = false;
 	for (int i = 0; i < 50; i++)
 	{
@@ -385,8 +426,7 @@ static Vector3f calculate(const T1& volume1, const T2& volume2, const Affine3f& 
 		}
 	}
 	
-	//Vector3f point = getNearestSimplexPoint(simplex);
-	Vector3f point = Vector3f(0,0,0);
+	Vector3f point = getNearestSimplexPoint(simplex);
 	return point;
 }
 

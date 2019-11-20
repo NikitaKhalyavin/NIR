@@ -20,12 +20,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <math.h>
-#include <string.h>
-#include "../Src/manipulator.h"
+
+//#include "../Src/manipulator.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+#include "../Src/correct_Eigen_include.h"
 
 /* USER CODE END Includes */
 
@@ -50,6 +51,9 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
+using Eigen::Matrix3f;
+using Eigen::Vector3f;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,6 +61,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
+
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -75,6 +81,19 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
+	Matrix3f m1;
+	m1(0,0) = 1;
+	m1(0,1) = 0;
+	m1(0,2) = 0;
+	m1(1,0) = 0;
+	m1(1,1) = 1;
+	m1(1,2) = 0;
+	m1(2,0) = 0;
+	m1(2,1) = 0;
+	m1(2,2) = 1;
+	Vector3f v1(1,1,1);
+	Vector3f v2 = m1 * v1;
+	
   /* USER CODE END 1 */
   
 
@@ -105,7 +124,7 @@ int main(void)
   const int partNumber = 4;
   float position[partNumber] = {0, 0, 0, 0};
   float speed[partNumber] = {0, 0, 0, 0};
-
+	
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -113,16 +132,17 @@ int main(void)
   while (1)
   {
     
-    float slowdown = get_slowdown_coefficient(position, speed, partNumber);
+    /*float slowdown = get_slowdown_coefficient(position, speed, partNumber);
     
     for(int i = 0; i < partNumber; i++)
     {
       position[i] += speed[i] * slowdown;
-			const int arraySize = 3 * sizeof(float);
-			uint8_t sendBuffer[arraySize];
-			memcpy(sendBuffer, &position[1], arraySize);
-			HAL_UART_Transmit(&huart2, sendBuffer, arraySize,500);
     }
+		const int arraySize = 3 * sizeof(float);
+		uint8_t sendBuffer[arraySize];
+		memcpy(sendBuffer, &position[1], arraySize);
+		HAL_UART_Transmit(&huart2, sendBuffer, arraySize,500);
+		*/
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

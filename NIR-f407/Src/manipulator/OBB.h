@@ -1,11 +1,7 @@
 #pragma once
-#include "pch.h"
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
 
-using Eigen::Vector3f;
-using Eigen::Affine3f;
-using Eigen::Matrix3f;
+
+#include "../Src/correct_Eigen_include.h"
 
 class OBB
 {

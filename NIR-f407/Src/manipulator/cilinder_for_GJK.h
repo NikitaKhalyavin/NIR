@@ -1,8 +1,7 @@
 #pragma once
 
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
 
+#include "../Src/correct_Eigen_include.h"
 
 #include "bounding_volume.h"
 
