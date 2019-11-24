@@ -7,21 +7,28 @@ void Robot::addPart(Part* newPart)
 	parts.push_back(newPart);
 }
 
-void Robot::addPairOfPartsForChecking(int part1Index, int part2Index)
+void Robot::addPairOfPartsForChecking(Part* part1, Part* part2)
 {
 	PairOfPartsMayCollide newPair;
-	newPair.part1 = parts[part1Index];
-	newPair.part2 = parts[part2Index];
+	newPair.part1 = part1;
+	newPair.part2 = part2;
 	pairsOfPartsForChecking.push_back(newPair);
 }
 
-float Robot::getSlowdownCoefficient(vector<float>& currentConfiguration, const vector<float>& receivedSpeed)
+float Robot::getSlowdownCoefficient(float* currentConfiguration, const float* receivedSpeed, int numberOfParts)
 {
-	float coefficientOfSlowdown = 1;
+
 	const float safeDistance = 0.01;
 	const float maxRelativeProj = 0.1;
 	
-	for (int i = 0; i < currentConfiguration.size(); i++)
+	if(numberOfParts != parts.size())
+	{
+		return 1;
+	}
+	
+	float coefficientOfSlowdown = 1;
+	
+	for (int i = 0; i < parts.size(); i++)
 	{
 		float min = parts[i]->getMinPosition();
 		if (isnan(min)) continue;
@@ -56,30 +63,30 @@ float Robot::getSlowdownCoefficient(vector<float>& currentConfiguration, const v
 
 	}
 	
-	updatePartsConfiguration(currentConfiguration);
+	updatePartsConfiguration(currentConfiguration, numberOfParts);
 
-	vector<bool> isNear;
-	vector<Vector3f> currentNearestPoint;
+	bool isNear[numberOfParts];
+	Vector3f currentNearestPoint[numberOfParts];
 	for (int i = 0; i < pairsOfPartsForChecking.size(); i++)
 	{
 		Part* firstPart = pairsOfPartsForChecking[i].part1;
 		Part* secondPart = pairsOfPartsForChecking[i].part2;
 		bool isNearSecondPart = firstPart->checkRoughBoundingCollision(*secondPart);
-		isNear.push_back(isNearSecondPart);
+		isNear[i] = isNearSecondPart;
 		Vector3f nearestPoint(0, 0, 0);
 		if (isNearSecondPart)
 		{
 			nearestPoint = firstPart->getNearestPoint(*secondPart);
 		}
-		currentNearestPoint.push_back(nearestPoint);
+		currentNearestPoint[i] = nearestPoint;
 	}
 
-	for (int i = 0; i < currentConfiguration.size(); i++)
+	for (int i = 0; i < numberOfParts; i++)
 	{
 		currentConfiguration[i] += receivedSpeed[i];
 	}
 
-	updatePartsConfiguration(currentConfiguration);
+	updatePartsConfiguration(currentConfiguration, numberOfParts);
 	
 	for (int i = 0; i < pairsOfPartsForChecking.size(); i++)
 	{
@@ -116,8 +123,12 @@ float Robot::getSlowdownCoefficient(vector<float>& currentConfiguration, const v
 	return coefficientOfSlowdown;
 }
 
-void Robot::updatePartsConfiguration(const vector<float>& newConfiguration)
+void Robot::updatePartsConfiguration(const float* newConfiguration, int numberOfParts)
 {
+	if(numberOfParts != parts.size())
+	{
+		return;
+	}
 	for (int i = 0; i < parts.size(); i++)
 	{
 		parts[i]->updateTransform(newConfiguration[i]);

@@ -21,12 +21,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-//#include "../Src/manipulator.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <string.h>
+
 #include "../Src/correct_Eigen_include.h"
+#include "../Src/manipulator/main_interface.h"
+//#include "../Src/manipulator.h"
 
 /* USER CODE END Includes */
 
@@ -37,6 +39,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define M_PI 3.1415926535897932384626433832795
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,8 +56,6 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
-using Eigen::Matrix3f;
-using Eigen::Vector3f;
 
 /* USER CODE END PV */
 
@@ -81,18 +84,6 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
-	Matrix3f m1;
-	m1(0,0) = 1;
-	m1(0,1) = 0;
-	m1(0,2) = 0;
-	m1(1,0) = 0;
-	m1(1,1) = 1;
-	m1(1,2) = 0;
-	m1(2,0) = 0;
-	m1(2,1) = 0;
-	m1(2,2) = 1;
-	Vector3f v1(1,1,1);
-	Vector3f v2 = m1 * v1;
 	
   /* USER CODE END 1 */
   
@@ -119,11 +110,53 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  //manipulator_init();
+  Vector3f baseSize(2, 1, 2);
+	Vector3f zero(0, 0, 0);
+
+	Part basePart(zero, Vector3f::UnitZ(), true);
+	basePart.setRoughBounding(baseSize, zero, zero);
+	basePart.addBox(baseSize, zero, zero);
+
+	Vector3f joint1(0, 0.5f, 0);
+	Part part1(joint1, Vector3f::UnitY(), true);
+	part1.setParent(&basePart);
+	part1.setRoughBounding(Vector3f(1, 2.6f, 1), Vector3f(0, 1.3f, 1), zero);
+	part1.addCilinder(0.5f, 0.25f, Vector3f(0, 0.25f, 0), Vector3f(M_PI / 4, 0, 0));
+	part1.addCilinder(0.3f, 1, Vector3f(0, 1.4f, 0), Vector3f(M_PI / 4, 0, 0));
+	
+	Vector3f joint2(0, 2.4f, 0);
+	Part part2(joint2, Vector3f::UnitZ(), true);
+	part2.setParent(&part1);
+	part2.setRoughBounding(Vector3f(1, 3.5f, 1), Vector3f(0, 1.3f, 1), zero);
+	part2.addCilinder(0.2f, 0.7f, Vector3f(0, 1.3f, 0), Vector3f(M_PI / 4, 0, 0));
+	part2.addCilinder(0.25f, 0.3f, Vector3f(0, 0, 0), Vector3f(0, 0, 0));
+	part2.addCilinder(0.25f, 0.3f, Vector3f(0, 2.6f, 0), Vector3f(0, 0, 0));
+	part2.addBox(Vector3f(0.5f, 0.6f, 0.6f), Vector3f(0, 0.32f, 0), zero);
+	part2.addBox(Vector3f(0.5f, 0.6f, 0.6f), Vector3f(0, 2.28f, 0), zero);
+
+	Vector3f joint3(0, 2.6f, 0);
+	Part part3(joint3, Vector3f::UnitZ(), true);
+	part3.setParent(&part2);
+	part3.setRoughBounding(Vector3f(1.5f, 3.2f, 1.3f), Vector3f(0, 1.15f, 1), zero);
+	part3.addCilinder(0.15f, 0.1f, Vector3f(0, 2.05f, 0), Vector3f(M_PI / 4, 0, 0));
+	part3.addSphere(0.26f, Vector3f(0, 2.343f, 0), Vector3f(0, 0, 0));
+	part3.addBox(Vector3f(0.5f, 0.6f, 0.6f), Vector3f(0, 0.32f, 0), zero);
+	part3.addBox(Vector3f(0.5f, 0.6f, 0.6f), Vector3f(0, 2.28f, 0), zero);
   
-  const int partNumber = 4;
-  float position[partNumber] = {0, 0, 0, 0};
-  float speed[partNumber] = {0, 0, 0, 0};
+	Robot robot;
+	
+	robot.addPart(&basePart);
+	robot.addPart(&part1);
+	robot.addPart(&part2);
+	robot.addPart(&part3);
+
+	robot.addPairOfPartsForChecking(&part2, &basePart);
+	robot.addPairOfPartsForChecking(&part3, &basePart);
+	robot.addPairOfPartsForChecking(&part3, &part1);
+  
+  const int numberOfParts = 4;
+  float position[numberOfParts] = {0, 0, 0, 0};
+  float speed[numberOfParts] = {0, 0, 0, 0};
 	
   /* USER CODE END 2 */
 
@@ -131,18 +164,24 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		
+		float tempPosition[numberOfParts];
+		memcpy(tempPosition, position, numberOfParts * sizeof(float));
+		
     
-    /*float slowdown = get_slowdown_coefficient(position, speed, partNumber);
+		float slowdown = robot.getSlowdownCoefficient(position, speed, numberOfParts);
     
-    for(int i = 0; i < partNumber; i++)
+    for(int i = 0; i < numberOfParts; i++)
     {
       position[i] += speed[i] * slowdown;
     }
-		const int arraySize = 3 * sizeof(float);
+		
+		//number of parts - 1 brcause the base can't move
+		const int arraySize = (numberOfParts - 1) * sizeof(float);
 		uint8_t sendBuffer[arraySize];
 		memcpy(sendBuffer, &position[1], arraySize);
-		HAL_UART_Transmit(&huart2, sendBuffer, arraySize,500);
-		*/
+		HAL_UART_Transmit(&huart2, sendBuffer, arraySize, 500);
+		
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
