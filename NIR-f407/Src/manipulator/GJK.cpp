@@ -7,6 +7,7 @@ class Simplex
 private:
 	Vector3f points[4];
 	int length;
+	const int maxLength = 4;
 public:
 	Simplex() : length(0) {}
 	
@@ -17,28 +18,27 @@ public:
 	
 	void add(const Vector3f & data)
 	{
-		if(length >= 3)
+		if(length >= maxLength)
 			return;
-		length++;
 		points[length] = data;
+		length++;
 	}
 	
 	void remove(int index)
 	{
-		if(index > length)
+		if(index >= length)
 			return;
-		
+		length--;
 		if(index != length)
 		{
 			points[index] = points[length];
 		}
-		length--;
 	}
 	
 	Vector3f& operator[] (const int index)
 	{
-		if(index > length)
-			return points[length];	
+		if(index >= length)
+			return points[length - 1];	
 		return points[index];
 	}
 	

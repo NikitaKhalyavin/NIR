@@ -18,12 +18,12 @@ void Robot::addPairOfPartsForChecking(Part* part1, Part* part2)
 float Robot::getSlowdownCoefficient(float* currentConfiguration, const float* receivedSpeed, int numberOfParts)
 {
 
-	const float safeDistance = 0.01;
+	const float safeDistance = 0.1;
 	const float maxRelativeProj = 0.1;
 	
 	if(numberOfParts != parts.size())
 	{
-		return 1;
+		return 0;
 	}
 	
 	float coefficientOfSlowdown = 1;

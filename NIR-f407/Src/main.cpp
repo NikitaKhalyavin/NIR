@@ -110,7 +110,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  Vector3f baseSize(2, 1, 2);
+  Vector3f baseSize(4, 1, 4);
 	Vector3f zero(0, 0, 0);
 
 	Part basePart(zero, Vector3f::UnitZ(), true);
@@ -156,7 +156,7 @@ int main(void)
   
   const int numberOfParts = 4;
   float position[numberOfParts] = {0, 0, 0, 0};
-  float speed[numberOfParts] = {0, 0, 0, 0};
+  float speed[numberOfParts] = {0, 0, 0.05, 0};
 	
   /* USER CODE END 2 */
 
@@ -169,7 +169,7 @@ int main(void)
 		memcpy(tempPosition, position, numberOfParts * sizeof(float));
 		
     
-		float slowdown = robot.getSlowdownCoefficient(position, speed, numberOfParts);
+		float slowdown = robot.getSlowdownCoefficient(tempPosition, speed, numberOfParts);
     
     for(int i = 0; i < numberOfParts; i++)
     {
@@ -180,8 +180,11 @@ int main(void)
 		const int arraySize = (numberOfParts - 1) * sizeof(float);
 		uint8_t sendBuffer[arraySize];
 		memcpy(sendBuffer, &position[1], arraySize);
-		HAL_UART_Transmit(&huart2, sendBuffer, arraySize, 500);
+		uint8_t packetHeader[2] = {'S','T'};
 		
+		HAL_UART_Transmit(&huart2, packetHeader, sizeof(packetHeader), 10);
+		HAL_UART_Transmit(&huart2, sendBuffer, arraySize, 500);
+		//HAL_Delay(100);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

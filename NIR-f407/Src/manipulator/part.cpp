@@ -104,7 +104,7 @@ void Part::addSphere(float radius, const Vector3f position, const Vector3f angle
 	transform.rotate(Eigen::AngleAxisf(angles(0), Vector3f::UnitX()));
 	transform.rotate(Eigen::AngleAxisf(angles(1), Vector3f::UnitY()));
 	transform.rotate(Eigen::AngleAxisf(angles(2), Vector3f::UnitZ()));
-	Sphere_GJK newSphere(radius, ownTransform);
+	Sphere_GJK newSphere(radius, transform);
 	spheres.push_back(newSphere);
 }
 
@@ -115,7 +115,7 @@ void Part::addCilinder(float  radius, float highest, const Vector3f position, co
 	transform.rotate(Eigen::AngleAxisf(angles(0), Vector3f::UnitX()));
 	transform.rotate(Eigen::AngleAxisf(angles(1), Vector3f::UnitY()));
 	transform.rotate(Eigen::AngleAxisf(angles(2), Vector3f::UnitZ()));
-	Cilinder_GJK newCilinder(radius, highest, ownTransform);
+	Cilinder_GJK newCilinder(radius, highest, transform);
 	cilinders.push_back(newCilinder);
 }
 
