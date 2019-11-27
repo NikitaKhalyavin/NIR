@@ -58,8 +58,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define AxisX_M_Pin GPIO_PIN_2
+#define AxisX_M_GPIO_Port GPIOE
 #define CS_I2C_SPI_Pin GPIO_PIN_3
 #define CS_I2C_SPI_GPIO_Port GPIOE
+#define AxisY_M_Pin GPIO_PIN_4
+#define AxisY_M_GPIO_Port GPIOE
+#define AxisZ_M_Pin GPIO_PIN_6
+#define AxisZ_M_GPIO_Port GPIOE
 #define PC14_OSC32_IN_Pin GPIO_PIN_14
 #define PC14_OSC32_IN_GPIO_Port GPIOC
 #define PC15_OSC32_OUT_Pin GPIO_PIN_15
@@ -94,8 +100,14 @@ void Error_Handler(void);
 #define LD5_GPIO_Port GPIOD
 #define LD6_Pin GPIO_PIN_15
 #define LD6_GPIO_Port GPIOD
+#define AxisZ_P_Pin GPIO_PIN_6
+#define AxisZ_P_GPIO_Port GPIOC
 #define I2S3_MCK_Pin GPIO_PIN_7
 #define I2S3_MCK_GPIO_Port GPIOC
+#define AxisY_P_Pin GPIO_PIN_8
+#define AxisY_P_GPIO_Port GPIOC
+#define AxisX_P_Pin GPIO_PIN_8
+#define AxisX_P_GPIO_Port GPIOA
 #define VBUS_FS_Pin GPIO_PIN_9
 #define VBUS_FS_GPIO_Port GPIOA
 #define OTG_FS_ID_Pin GPIO_PIN_10
