@@ -1,4 +1,4 @@
-;#<FEEDBACK># ARM Linker, 5060061: Last Updated: Tue Nov 26 20:26:16 2019
+;#<FEEDBACK># ARM Linker, 5060061: Last Updated: Sun Dec 08 16:37:39 2019
 ;VERSION 0.2
 ;FILE bounding_volume.o
 _ZN14BoundingVolume20setTransformToParentEN5Eigen9TransformIfLi3ELi2ELi0EEE <= USED 0
@@ -66,7 +66,6 @@ HAL_DBGMCU_EnableDBGSleepMode <= USED 0
 HAL_DBGMCU_EnableDBGStandbyMode <= USED 0
 HAL_DBGMCU_EnableDBGStopMode <= USED 0
 HAL_DeInit <= USED 0
-HAL_Delay <= USED 0
 HAL_DisableCompensationCell <= USED 0
 HAL_EnableCompensationCell <= USED 0
 HAL_GetDEVID <= USED 0
@@ -172,7 +171,6 @@ HAL_GPIO_DeInit <= USED 0
 HAL_GPIO_EXTI_Callback <= USED 0
 HAL_GPIO_EXTI_IRQHandler <= USED 0
 HAL_GPIO_LockPin <= USED 0
-HAL_GPIO_ReadPin <= USED 0
 HAL_GPIO_TogglePin <= USED 0
 __asm___20_stm32f4xx_hal_gpio_c_ea787061____REV16 <= USED 0
 __asm___20_stm32f4xx_hal_gpio_c_ea787061____REVSH <= USED 0

@@ -117,14 +117,14 @@ int main(void)
 	Vector3f joint1(0, 0.5f, 0);
 	Part part1(joint1, Vector3f::UnitY(), true);
 	part1.setParent(&basePart);
-	part1.setRoughBounding(Vector3f(1, 2.6f, 1), Vector3f(0, 1.3f, 1), zero);
+	part1.setRoughBounding(Vector3f(1, 2.6f, 1), Vector3f(0, 1.3f, 0), zero);
 	part1.addCilinder(0.5f, 0.25f, Vector3f(0, 0.25f, 0), Vector3f(M_PI / 4, 0, 0));
 	part1.addCilinder(0.3f, 1, Vector3f(0, 1.4f, 0), Vector3f(M_PI / 4, 0, 0));
 	
 	Vector3f joint2(0, 2.4f, 0);
 	Part part2(joint2, Vector3f::UnitZ(), true);
 	part2.setParent(&part1);
-	part2.setRoughBounding(Vector3f(1, 3.5f, 1), Vector3f(0, 1.3f, 1), zero);
+	part2.setRoughBounding(Vector3f(1, 3.5f, 1), Vector3f(0, 1.3f, 0), zero);
 	part2.addCilinder(0.2f, 0.7f, Vector3f(0, 1.3f, 0), Vector3f(M_PI / 4, 0, 0));
 	part2.addCilinder(0.25f, 0.3f, Vector3f(0, 0, 0), Vector3f(0, 0, 0));
 	part2.addCilinder(0.25f, 0.3f, Vector3f(0, 2.6f, 0), Vector3f(0, 0, 0));
@@ -134,7 +134,7 @@ int main(void)
 	Vector3f joint3(0, 2.6f, 0);
 	Part part3(joint3, Vector3f::UnitZ(), true);
 	part3.setParent(&part2);
-	part3.setRoughBounding(Vector3f(1.5f, 3.2f, 1.3f), Vector3f(0, 1.15f, 1), zero);
+	part3.setRoughBounding(Vector3f(1.5f, 3.2f, 1.3f), Vector3f(0, 1.15f, 0), zero);
 	part3.addCilinder(0.15f, 0.1f, Vector3f(0, 2.05f, 0), Vector3f(M_PI / 4, 0, 0));
 	part3.addSphere(0.26f, Vector3f(0, 2.343f, 0), Vector3f(0, 0, 0));
 	part3.addBox(Vector3f(0.5f, 0.6f, 0.6f), Vector3f(0, 0.32f, 0), zero);
@@ -153,7 +153,7 @@ int main(void)
   
   const int numberOfParts = 4;
   float position[numberOfParts] = {0, 0, 0, 0};
-  float speed[numberOfParts] = {0, 0, 0.05, 0};
+  float speed[numberOfParts] = {0, 0, 0, 0};
 	
   /* USER CODE END 2 */
 
@@ -161,6 +161,35 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		
+		const float targetSpeed = 0.025f;
+		
+		bool xPlus  = !HAL_GPIO_ReadPin(AxisX_P_GPIO_Port, AxisX_P_Pin);
+		bool xMinus = !HAL_GPIO_ReadPin(AxisX_M_GPIO_Port, AxisX_M_Pin);
+		bool yPlus  = !HAL_GPIO_ReadPin(AxisY_P_GPIO_Port, AxisY_P_Pin);
+		bool yMinus = !HAL_GPIO_ReadPin(AxisY_M_GPIO_Port, AxisY_M_Pin);
+		bool zPlus  = !HAL_GPIO_ReadPin(AxisZ_P_GPIO_Port, AxisZ_P_Pin);
+		bool zMinus = !HAL_GPIO_ReadPin(AxisZ_M_GPIO_Port, AxisZ_M_Pin);
+		
+		for(int i = 1; i < 4; i++)
+		{
+			speed[i] = 0;
+		}
+		
+		if(xPlus && !(xMinus))
+			speed[1] = targetSpeed;
+		if(xMinus && !(xPlus))
+			speed[1] = -targetSpeed;
+		
+		if(yPlus && !(yMinus))
+			speed[2] = targetSpeed;
+		if(yMinus && !(yPlus))
+			speed[2] = -targetSpeed;
+		
+		if(zPlus && !(zMinus))
+			speed[3] = targetSpeed;
+		if(zMinus && !(zPlus))
+			speed[3] = -targetSpeed;
 		
 		float tempPosition[numberOfParts];
 		memcpy(tempPosition, position, numberOfParts * sizeof(float));
@@ -181,7 +210,7 @@ int main(void)
 		
 		HAL_UART_Transmit(&huart2, packetHeader, sizeof(packetHeader), 10);
 		HAL_UART_Transmit(&huart2, sendBuffer, arraySize, 500);
-		//HAL_Delay(100);
+		HAL_Delay(40);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
