@@ -18,10 +18,10 @@ private:
 	vector<Part*> parts;
 	vector<PairOfPartsMayCollide> pairsOfPartsForChecking;
 
-	void updatePartsConfiguration(const float* newConfiguration, int numberOfParts);
+	void updatePartsConfiguration(const float* currentConfiguration, const float* nextConfiguration, int numberOfParts);
 public:
 	Robot(){};
 	void addPart(Part* newPart);
 	void addPairOfPartsForChecking(Part* part1, Part* part2);
-	float getSlowdownCoefficient(float* currentConfiguration, const float* receivedSpeed, int numberOfParts);
+	float getSlowdownCoefficient(const float* currentConfiguration, const float* nextConfiguration, int numberOfParts);
 };

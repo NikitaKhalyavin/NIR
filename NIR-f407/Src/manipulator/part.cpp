@@ -29,35 +29,43 @@ void Part::setMovingLimits(float min, float max)
 	maxPosition = max;
 }
 
-void Part::updateTransform(float coordinate)
+void Part::updateTransform(float coordinate, float nextCoordinate)
 {
-	ownTransform = translateToParentSC;
+	Affine3f ownTransform = translateToParentSC;
+	Affine3f nextOwnTransform = translateToParentSC;
 	if (isRotating)
 	{
 		ownTransform.rotate(Eigen::AngleAxisf(coordinate, movingAxis));
+		nextOwnTransform.rotate(Eigen::AngleAxisf(nextCoordinate, movingAxis));		
 	}
 	else
 	{
 		ownTransform.translate(movingAxis * coordinate);
+		nextOwnTransform.translate(movingAxis * nextCoordinate);
 	}
 
 	if (parent == NULL)
 	{
 		fullTransform = ownTransform;
+		nextFullTransform = nextOwnTransform;
 	}
 	else
 	{
-		fullTransform = parent->fullTransform * this->ownTransform;
+		fullTransform = parent->fullTransform * ownTransform;
+		nextFullTransform = parent->nextFullTransform * nextOwnTransform;
 	}
+	Matrix3f nextRotateToGlobalSC;
 	for (int i = 0; i < 3; i++)
 	{
 		for (int j = 0; j < 3; j++)
 		{
 			rotateToGlobalSC(i, j) = fullTransform(i, j);
+			nextRotateToGlobalSC(i, j) = nextFullTransform(i, j);
 		}
 	}
 
 	rotateToOwnSC = rotateToGlobalSC.inverse();
+	nextRotateToOwnSC = nextRotateToGlobalSC.inverse();
 	roughBounding.update(fullTransform, rotateToGlobalSC, rotateToOwnSC);
 }
 
@@ -124,77 +132,95 @@ bool Part::checkRoughBoundingCollision(const Part& other) const
 	return this->roughBounding.checkCollisionBySAT(other.roughBounding);
 }
 
-template <typename T>
-Vector3f Part::getNearestPointToVolume(const Part& other, const T& volume, const Affine3f& fullTransform, const Matrix3f& rotate) const
+
+template <typename T1, typename T2>
+float Part::getNextCollisionTimeForPairOfVolumes(const Part& other, const T1& ownVolume, const T2& otherVolume) const
 {
-	float min = INFINITY;
-	Vector3f nearest(0, 0, 0);
+	Vector3f pairOfVolumesNearest = calculateDistanceByGJK(ownVolume, otherVolume, this->fullTransform, other.fullTransform, this->rotateToOwnSC, other.rotateToOwnSC);
+	Vector3f nextPairOfVolumesNearest = calculateDistanceByGJK(ownVolume, otherVolume, this->nextFullTransform, other.nextFullTransform, this->nextRotateToOwnSC, other.nextRotateToOwnSC);
+	
+	Vector3f difference = nextPairOfVolumesNearest - pairOfVolumesNearest;
+	
+	float dist = sqrt(pairOfVolumesNearest.dot(pairOfVolumesNearest));
+	float speedOfApproach = -difference.dot(pairOfVolumesNearest) / dist;
+	
+	if(speedOfApproach < 0.0001f)
+	{
+		return INFINITY;
+		//distance between this pair of volumes is increasing
+	}
+	
+	float nextDist = sqrt(nextPairOfVolumesNearest.dot(nextPairOfVolumesNearest));
+	const float distancethresh = 0.1f;
+	if(nextDist < distancethresh)
+	{
+		//parts are too close, stop moving
+		return 0;
+	}
+	
+	float timeToCollision = dist / speedOfApproach;
+	
+	return timeToCollision;
+}
+	
+
+template <typename T>
+float Part::getNextCollisionTimeForVolume(const Part& other, const T& volume) const
+{
+	float minTime = INFINITY;
 	for (int i = 0; i < other.boxes.size(); i++)
 	{
-		Vector3f pairOfVolumesNearest = calculateDistanceByGJK(volume, other.boxes[i], fullTransform, other.fullTransform, rotate, other.rotateToOwnSC);
-		float dist = sqrt(pairOfVolumesNearest.dot(pairOfVolumesNearest));
-		if (dist < min)
+		float pairCollisionTime = getNextCollisionTimeForPairOfVolumes(other, volume, other.boxes[i]);
+		if(pairCollisionTime < minTime)
 		{
-			min = dist;
-			nearest = pairOfVolumesNearest;
+			minTime = pairCollisionTime;
 		}
 	}
 	for (int i = 0; i < other.spheres.size(); i++)
 	{
-		Vector3f pairOfVolumesNearest = calculateDistanceByGJK(volume, other.spheres[i], fullTransform, other.fullTransform, rotate, other.rotateToOwnSC);
-		float dist = sqrt(pairOfVolumesNearest.dot(pairOfVolumesNearest));
-		if (dist < min)
+		float pairCollisionTime = getNextCollisionTimeForPairOfVolumes(other, volume, other.spheres[i]);
+		if(pairCollisionTime < minTime)
 		{
-			min = dist;
-			nearest = pairOfVolumesNearest;
+			minTime = pairCollisionTime;
 		}
 	}
 	for (int i = 0; i < other.cilinders.size(); i++)
 	{
-		Vector3f pairOfVolumesNearest = calculateDistanceByGJK(volume, other.cilinders[i], fullTransform, other.fullTransform, rotate, other.rotateToOwnSC);
-		float dist = sqrt(pairOfVolumesNearest.dot(pairOfVolumesNearest));
-		if (dist < min)
+		float pairCollisionTime = getNextCollisionTimeForPairOfVolumes(other, volume, other.cilinders[i]);
+		if(pairCollisionTime < minTime)
 		{
-			min = dist;
-			nearest = pairOfVolumesNearest;
+			minTime = pairCollisionTime;
 		}
 	}
-	return nearest;
+	return minTime;
 }
 
-Vector3f Part::getNearestPoint(const Part& other) const
+float Part::getNextCollisionTime(const Part& other) const
 {
-	float min = INFINITY;
-	Vector3f nearest(0, 0, 0);
+	float minTime = INFINITY;
 	for (int i = 0; i < this->boxes.size(); i++)
 	{
-		Vector3f nearestPointToPart = getNearestPointToVolume(other, this->boxes[i], fullTransform, rotateToOwnSC);
-		float dist = sqrt(nearestPointToPart.dot(nearestPointToPart));
-		if (dist < min)
+		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->boxes[i]);
+		if(pairCollisionTime < minTime)
 		{
-			min = dist;
-			nearest = nearestPointToPart;
+			minTime = pairCollisionTime;
 		}
 	}
 	for (int i = 0; i < this->spheres.size(); i++)
 	{
-		Vector3f nearestPointToPart = getNearestPointToVolume(other, this->spheres[i], fullTransform, rotateToOwnSC);
-		float dist = sqrt(nearestPointToPart.dot(nearestPointToPart));
-		if (dist < min)
+		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->cilinders[i]);
+		if(pairCollisionTime < minTime)
 		{
-			min = dist;
-			nearest = nearestPointToPart;
+			minTime = pairCollisionTime;
 		}
 	}
 	for (int i = 0; i < this->cilinders.size(); i++)
 	{
-		Vector3f nearestPointToPart = getNearestPointToVolume(other, this->cilinders[i], fullTransform, rotateToOwnSC);
-		float dist = sqrt(nearestPointToPart.dot(nearestPointToPart));
-		if (dist < min)
+		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->spheres[i]);
+		if(pairCollisionTime < minTime)
 		{
-			min = dist;
-			nearest = nearestPointToPart;
+			minTime = pairCollisionTime;
 		}
 	}
-	return nearest;
+	return minTime;
 }

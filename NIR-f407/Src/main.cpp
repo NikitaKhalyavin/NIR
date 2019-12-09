@@ -153,6 +153,7 @@ int main(void)
   
   const int numberOfParts = 4;
   float position[numberOfParts] = {0, 0, 0, 0};
+	float nextPosition[numberOfParts] = {0, 0, 0, 0};
   float speed[numberOfParts] = {0, 0, 0, 0};
 	
   /* USER CODE END 2 */
@@ -191,11 +192,12 @@ int main(void)
 		if(zMinus && !(zPlus))
 			speed[3] = -targetSpeed;
 		
-		float tempPosition[numberOfParts];
-		memcpy(tempPosition, position, numberOfParts * sizeof(float));
-		
+		for(int i = 0; i < numberOfParts; i++)
+    {
+      nextPosition[i] = position[i] + speed[i];
+    }
     
-		float slowdown = robot.getSlowdownCoefficient(tempPosition, speed, numberOfParts);
+		float slowdown = robot.getSlowdownCoefficient(position, nextPosition, numberOfParts);
     
     for(int i = 0; i < numberOfParts; i++)
     {
@@ -204,12 +206,12 @@ int main(void)
 		
 		//number of parts - 1 brcause the base can't move
 		const int arraySize = (numberOfParts - 1) * sizeof(float);
-		uint8_t sendBuffer[arraySize];
-		memcpy(sendBuffer, &position[1], arraySize);
-		uint8_t packetHeader[2] = {'S','T'};
+		uint8_t sendBuffer[arraySize + 2];
+		memcpy(&sendBuffer[2], &position[1], arraySize);
+		sendBuffer[0] = 'S';
+		sendBuffer[1] = 'T';
 		
-		HAL_UART_Transmit(&huart2, packetHeader, sizeof(packetHeader), 10);
-		HAL_UART_Transmit(&huart2, sendBuffer, arraySize, 500);
+		HAL_UART_Transmit(&huart2, sendBuffer, arraySize + 2, 500);
 		HAL_Delay(40);
     /* USER CODE END WHILE */
 

@@ -14,12 +14,14 @@ private:
 	OBB roughBounding;
 
 	Affine3f translateToParentSC;
-	Affine3f ownTransform;
 	Affine3f fullTransform;
 
 	Matrix3f rotateToOwnSC;
 	Matrix3f rotateToGlobalSC;
-
+	
+	Affine3f nextFullTransform;
+	Matrix3f nextRotateToOwnSC;
+	
 	bool isRotating;
 	Vector3f movingAxis;
 
@@ -31,8 +33,12 @@ private:
 	float maxPosition;
 
 	template <typename T>
-	Vector3f getNearestPointToVolume(const Part& other, const T& volume, const Affine3f& fullTransform, const Matrix3f& rotate) const;
+	float getNextCollisionTimeForVolume(const Part& other, const T& volume) const;
 
+	template <typename T1, typename T2>
+	float getNextCollisionTimeForPairOfVolumes(const Part& other, const T1& ownVolume, const T2& otherVolume) const;
+
+	
 public:
 	Part(const Vector3f jointPosition, const Vector3f jointAxis, bool isRotating);
 
@@ -49,9 +55,9 @@ public:
 	void addCilinder(float  radius, float highest, const Vector3f position, const Vector3f angles);
 
 
-	void updateTransform(float angle);
+	void updateTransform(float coordinate, float nextCoordinate);
 
 	bool checkRoughBoundingCollision(const Part& other) const;
-	Vector3f getNearestPoint(const Part& other) const;
+	float getNextCollisionTime(const Part& other) const;
 
 };

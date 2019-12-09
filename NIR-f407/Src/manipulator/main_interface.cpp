@@ -15,20 +15,21 @@ void Robot::addPairOfPartsForChecking(Part* part1, Part* part2)
 	pairsOfPartsForChecking.push_back(newPair);
 }
 
-float Robot::getSlowdownCoefficient(float* currentConfiguration, const float* receivedSpeed, int numberOfParts)
+float Robot::getSlowdownCoefficient(const float* currentConfiguration, const float* nextConfiguration, int numberOfParts)
 {
 
 	const float safeDistance = 0.1;
-	const float maxRelativeProj = 0.1;
+	const float minAllowedTime = 0.1;
 	
 	if(numberOfParts != parts.size())
 	{
 		return 0;
 	}
 	
+	float minTime = INFINITY;
 	float coefficientOfSlowdown = 1;
 	
-	for (int i = 0; i < parts.size(); i++)
+	/*for (int i = 0; i < parts.size(); i++)
 	{
 		float min = parts[i]->getMinPosition();
 		if (isnan(min)) continue;
@@ -60,70 +61,36 @@ float Robot::getSlowdownCoefficient(float* currentConfiguration, const float* re
 		{
 			coefficientOfSlowdown = slowdownForMax;
 		}
-
 	}
-	
-	updatePartsConfiguration(currentConfiguration, numberOfParts);
+	*/
+	updatePartsConfiguration(currentConfiguration, nextConfiguration, numberOfParts);
 
-	bool isNear[numberOfParts];
-	Vector3f currentNearestPoint[numberOfParts];
 	for (int i = 0; i < pairsOfPartsForChecking.size(); i++)
 	{
 		Part* firstPart = pairsOfPartsForChecking[i].part1;
 		Part* secondPart = pairsOfPartsForChecking[i].part2;
 		bool isNearSecondPart = firstPart->checkRoughBoundingCollision(*secondPart);
-		isNear[i] = isNearSecondPart;
-		Vector3f nearestPoint(0, 0, 0);
 		if (isNearSecondPart)
 		{
-			nearestPoint = firstPart->getNearestPoint(*secondPart);
-		}
-		currentNearestPoint[i] = nearestPoint;
-	}
-
-	for (int i = 0; i < numberOfParts; i++)
-	{
-		currentConfiguration[i] += receivedSpeed[i];
-	}
-
-	updatePartsConfiguration(currentConfiguration, numberOfParts);
-	
-	for (int i = 0; i < pairsOfPartsForChecking.size(); i++)
-	{
-		Part* firstPart = pairsOfPartsForChecking[i].part1;
-		Part* secondPart = pairsOfPartsForChecking[i].part2;
-		bool isNearSecondPart = isNear[i];
-		if (isNearSecondPart)
-		{
-			Vector3f nearestPoint = currentNearestPoint[i];
-			Vector3f nextNearestPoint = firstPart->getNearestPoint(*secondPart);
-			Vector3f difference = nextNearestPoint - nearestPoint;
-
-			float proj = -( difference.dot(nearestPoint) / nearestPoint.dot(nearestPoint) );
-			if (proj > 0)
+			float time = firstPart->getNextCollisionTime(*secondPart);
+			if(time < minTime)
 			{
-				if (nextNearestPoint.dot(nextNearestPoint) < safeDistance * safeDistance)
-				{
-					coefficientOfSlowdown = 0;
-					return coefficientOfSlowdown;
-				}
-
-				float ownPairSlowdown = 1.0;
-				if (proj > maxRelativeProj)
-				{
-					ownPairSlowdown = maxRelativeProj / proj;
-				}
-				if (ownPairSlowdown < coefficientOfSlowdown)
-				{
-					coefficientOfSlowdown = ownPairSlowdown;
-				}
+				minTime = time;
 			}
 		}
 	}
+
+	if(minTime < minAllowedTime)
+	{
+		float slowdown = minTime / minAllowedTime;
+		if(slowdown < coefficientOfSlowdown)
+			coefficientOfSlowdown = slowdown;
+	}
+	
 	return coefficientOfSlowdown;
 }
 
-void Robot::updatePartsConfiguration(const float* newConfiguration, int numberOfParts)
+void Robot::updatePartsConfiguration(const float* currentConfiguration, const float* nextConfiguration, int numberOfParts)
 {
 	if(numberOfParts != parts.size())
 	{
@@ -131,6 +98,6 @@ void Robot::updatePartsConfiguration(const float* newConfiguration, int numberOf
 	}
 	for (int i = 0; i < parts.size(); i++)
 	{
-		parts[i]->updateTransform(newConfiguration[i]);
+		parts[i]->updateTransform(currentConfiguration[i], nextConfiguration[i]);
 	}
 }
