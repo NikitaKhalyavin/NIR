@@ -1,5 +1,5 @@
 #include "GJK.h"
-
+#include "../time_measurement.h"
 #define EPSILON 0.01f
 
 class Simplex
@@ -415,6 +415,7 @@ template <typename T1, typename T2>
 static Vector3f calculate(const T1& volume1, const T2& volume2, const Affine3f& transform1, 
 	const Affine3f& transform2, const Matrix3f& rotate1, const Matrix3f& rotate2)
 {
+	startMeasurement();
 	Simplex simplex;
 	bool exit = false;
 	for (int i = 0; i < 50; i++)
@@ -427,6 +428,9 @@ static Vector3f calculate(const T1& volume1, const T2& volume2, const Affine3f& 
 	}
 	
 	Vector3f point = getNearestSimplexPoint(simplex);
+	int iterationTime = getTimeMCS();
+	stopMeasurement();
+	addTimeValueForGJK_Statistic(iterationTime);
 	return point;
 }
 

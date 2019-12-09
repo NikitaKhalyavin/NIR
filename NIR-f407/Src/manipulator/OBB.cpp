@@ -1,4 +1,4 @@
-
+#include "../time_measurement.h"
 #include "OBB.h"
 
 
@@ -97,17 +97,27 @@ bool OBB::checkCollisionByGSK_Vector(const OBB& other, Vector3f& GSK_Vector) con
 	return true;
 }
 
+void actionBeforeReturning()
+{
+	int iterationTime = getTimeMCS();
+	stopMeasurement();
+	addTimeValueForSAT_Statistic(iterationTime);
+}
+
 bool OBB::checkCollisionBySAT(const OBB& other) const
 {
+	startMeasurement();
 	//check own axis of boxes
 	for (unsigned int i = 0; i < 3; i++)
 	{
 		if (!this->checkCollisionByGuideVector(other, i))
 		{
+			actionBeforeReturning();
 			return false;
 		}
 		if (!other.checkCollisionByGuideVector(*this, i))
 		{
+			actionBeforeReturning();
 			return false;
 		}
 	}
@@ -121,14 +131,17 @@ bool OBB::checkCollisionBySAT(const OBB& other) const
 
 			if (GSK_Vector.isZero())
 			{
+				actionBeforeReturning();
 				return true;
 			}
 			if (!this->checkCollisionByGSK_Vector(other, GSK_Vector))
 			{
+				actionBeforeReturning();
 				return false;
 			}
 
 		}
 	}
+	actionBeforeReturning();
 	return true;
 }

@@ -46,7 +46,6 @@ void TimeStatisticData::addValue(int time)
 
 TimeStatisticData GJK_Statistic;
 TimeStatisticData SAT_Statistic;
-TimeStatisticData Common_Statistic;
 
 void addTimeValueForGJK_Statistic(int time)
 {
@@ -55,8 +54,4 @@ void addTimeValueForGJK_Statistic(int time)
 void addTimeValueForSAT_Statistic(int time)
 {
   SAT_Statistic.addValue(time);
-}
-void addTimeValueForCommon_Statistic(int time)
-{
-  Common_Statistic.addValue(time);
 }

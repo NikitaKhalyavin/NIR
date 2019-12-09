@@ -28,4 +28,3 @@ int getTimeMCS();
 
 void addTimeValueForGJK_Statistic(int time);
 void addTimeValueForSAT_Statistic(int time);
-void addTimeValueForCommon_Statistic(int time);
