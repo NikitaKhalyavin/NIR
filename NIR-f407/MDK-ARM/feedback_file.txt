@@ -1,23 +1,39 @@
-;#<FEEDBACK># ARM Linker, 5060061: Last Updated: Mon Dec 09 15:28:29 2019
+;#<FEEDBACK># ARM Linker, 5060061: Last Updated: Wed Dec 11 17:24:15 2019
 ;VERSION 0.2
 ;FILE bounding_volume.o
 _ZN14BoundingVolume20setTransformToParentEN5Eigen9TransformIfLi3ELi2ELi0EEE <= USED 0
 ;FILE box_for_gjk.o
+_ZN5Eigen13CwiseBinaryOpINS_8internal17scalar_product_opIffEEKNS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEKNS_14CwiseNullaryOpINS1_18scalar_constant_opIfEES6_EEEC1ERS6_RSB_RKS3_ <= USED 0
+_ZN5Eigen13CwiseBinaryOpINS_8internal17scalar_product_opIffEEKNS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEKNS_5BlockIKNS4_IfLi3ELi3ELi0ELi3ELi3EEELi3ELi1ELb1EEEEC1ERS6_RSB_RKS3_ <= USED 0
 ;FILE cilinder_for_gjk.o
 ;FILE gjk.o
 ;FILE main.o
-Error_Handler <= USED 0
+_ZN4__rw12__string_refIcSt11char_traitsIcESaIcEE4dataEv <= USED 0
+_ZN4__rw15__rw_facet_baseD0Ev <= USED 0
+_ZN4__rw15__rw_facet_baseD1Ev <= USED 0
 _ZN4__rw16__rw_facet_makerISt8numpunctIcEE13_C_maker_funcEiPKcj <= USED 0
 _ZN4__rw17__rw_digit_writerIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_C_put_digitsEc <= USED 0
+_ZN4__rw17__rw_digit_writerIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE14_C_put_keywordERKSsc <= USED 0
 _ZN4__rw17__rw_digit_writerIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEC1ERS4_RSt8ios_base <= USED 0
 _ZN4__rw17__rw_digit_writerIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEED0Ev <= USED 0
 _ZN4__rw17__rw_digit_writerIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEED1Ev <= USED 0
 _ZN4__rw22__rw_digit_writer_base11_C_digitizeEm <= USED 0
+_ZN4__rw22__rw_digit_writer_baseC1ERSt8ios_base <= USED 0
 _ZN4__rw22__rw_digit_writer_baseD0Ev <= USED 0
 _ZN4__rw22__rw_digit_writer_baseD1Ev <= USED 0
-_ZN4__rw24__rw_digit_writer_base_1IcEC1ERSt8ios_baseRKSt6locale <= USED 0
+_ZN4__rw23__rw_numpunct_impl_dataIcE16_C_initfacetbaseERKSt6locale <= USED 0
+_ZN4__rw23__rw_numpunct_impl_dataIcE20_C_get_init_by_name_EPKc <= USED 0
+_ZN4__rw23__rw_numpunct_impl_dataIcEC1EPKNS_23__rw_numpunct_init_dataIcEE <= USED 0
 _ZN4__rw24__rw_digit_writer_base_1IcED0Ev <= USED 0
 _ZN4__rw24__rw_digit_writer_base_1IcED1Ev <= USED 0
+_ZN4__rw25__rw_digit_handler_base_1IcEC1ERKSt6locale <= USED 0
+_ZNK4__rw12__string_refIcSt11char_traitsIcESaIcEE12_C_ref_countEv <= USED 0
+_ZNKSs4dataEv <= USED 0
+_ZNKSs4sizeEv <= USED 0
+_ZNKSs5c_strEv <= USED 0
+_ZNKSs6lengthEv <= USED 0
+_ZNKSs7_C_prefEv <= USED 0
+_ZNKSs8capacityEv <= USED 0
 _ZNKSt6locale12_C_use_facetERKNS_2idEbiPFPN4__rw15__rw_facet_baseEiPKcjE <= USED 0
 _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_basecPKv <= USED 0
 _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_basecb <= USED 0
@@ -31,8 +47,10 @@ _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_
 _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_basect <= USED 0
 _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_basecx <= USED 0
 _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_basecy <= USED 0
-_ZNKSt8numpunctIcE16do_decimal_pointEv <= USED 0
-_ZNKSt8numpunctIcE16do_thousands_sepEv <= USED 0
+_ZNSs7_C_nullEv <= USED 0
+_ZNSt11char_traitsIcE4moveEPcPKcj <= USED 0
+_ZNSt11char_traitsIcE6assignERcRKc <= USED 0
+_ZNSt15basic_streambufIcSt11char_traitsIcEE5sputcEc <= USED 0
 _ZNSt15numpunct_bynameIcEC1EPKcj <= USED 0
 _ZNSt15numpunct_bynameIcED0Ev <= USED 0
 _ZNSt15numpunct_bynameIcED1Ev <= USED 0
@@ -40,16 +58,16 @@ _ZNSt19ostreambuf_iteratorIcSt11char_traitsIcEEaSEc <= USED 0
 _ZNSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEED0Ev <= USED 0
 _ZNSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEED1Ev <= USED 0
 _ZNSt8numpunctIcEC1EjPKN4__rw23__rw_numpunct_init_dataIcEE <= USED 0
-_ZNSt8numpunctIcED0Ev <= USED 0
 __asm___8_main_cpp_main___Z5__RRXj <= USED 0
 __asm___8_main_cpp_main___Z7__REV16j <= USED 0
 __asm___8_main_cpp_main___Z7__REVSHs <= USED 0
 ;FILE main_interface.o
 ;FILE obb.o
 _ZN3OBBC1EN5Eigen6MatrixIfLi3ELi1ELi0ELi3ELi1EEES2_NS1_IfLi3ELi3ELi0ELi3ELi3EEE <= USED 0
+_ZN5Eigen8internal16binary_evaluatorINS_13CwiseBinaryOpINS0_17scalar_product_opIffEEKNS_9TransposeIKNS_5BlockIKNS_6MatrixIfLi3ELi3ELi0ELi3ELi3EEELi1ELi3ELb0EEEEEKNS6_IKNS7_IfLi3ELi1ELi0ELi3ELi1EEELi3ELi1ELb1EEEEENS0_10IndexBasedESJ_ffED1Ev <= USED 0
+_ZNK5Eigen9DenseBaseINS_13CwiseBinaryOpINS_8internal17scalar_product_opIffEEKNS_9TransposeIKNS_5BlockIKNS_6MatrixIfLi3ELi3ELi0ELi3ELi3EEELi1ELi3ELb0EEEEEKNS6_IKNS7_IfLi3ELi1ELi0ELi3ELi1EEELi3ELi1ELb1EEEEEE3sumEv <= USED 0
 ;FILE part.o
 _ZN4Part15setMovingLimitsEff <= USED 0
-_ZN5Eigen8internal15call_assignmentINS_5BlockINS_6MatrixIfLi3ELi3ELi0ELi3ELi3EEELi1ELi3ELb0EEENS_13CwiseBinaryOpINS0_17scalar_product_opIffEEKNS3_IfLi3ELi1ELi0ELi3ELi1EEEKNS_14CwiseNullaryOpINS0_18scalar_constant_opIfEESA_EEEEEEvRT_RKT0_ <= USED 0
 ;FILE retarget.o
 __asm___12_retarget_cpp_3094dbb5___Z5__RRXj <= USED 0
 __asm___12_retarget_cpp_3094dbb5___Z7__REV16j <= USED 0
@@ -217,7 +235,6 @@ HAL_RCC_CSSCallback <= USED 0
 HAL_RCC_DisableCSS <= USED 0
 HAL_RCC_EnableCSS <= USED 0
 HAL_RCC_GetClockConfig <= USED 0
-HAL_RCC_GetHCLKFreq <= USED 0
 HAL_RCC_GetOscConfig <= USED 0
 HAL_RCC_MCOConfig <= USED 0
 HAL_RCC_NMI_IRQHandler <= USED 0

@@ -265,8 +265,24 @@ static bool evolveSimplex(Simplex& simplex, const T1& volume1, const T2& volume2
 	{
 	case 0:
 	{
+		//initialize the simplex by 4 points in tetrahedron directions
 		direction = Vector3f(1, 0, 0);
 		Vector3f extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
+			rotate1, rotate2, direction);
+		simplex.add(extremalPoint);
+		
+		direction = Vector3f(-0.33333f, 0.9428f, 0);
+		extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
+			rotate1, rotate2, direction);
+		simplex.add(extremalPoint);
+		
+		direction = Vector3f(-0.33333f, -0.4714f, 0.8165f);
+		extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
+			rotate1, rotate2, direction);
+		simplex.add(extremalPoint);
+		
+		direction = Vector3f(-0.33333f, -0.4714f, -0.8165f);
+		extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
 			rotate1, rotate2, direction);
 		simplex.add(extremalPoint);
 		break;
