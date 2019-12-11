@@ -42,8 +42,55 @@ public:
 		return points[index];
 	}
 	
+	void erase()
+	{
+		length = 0;
+	}
+	
 };
 
+
+bool isOriginInsideSimplex(Simplex& simplex)
+{
+	Vector3f point1 = simplex[0];
+	Vector3f point2 = simplex[1];
+	Vector3f point3 = simplex[2];
+	Vector3f point4 = simplex[3];
+
+	for (int i = 0; i < 4; i++)
+	{
+		Vector3f planePoints[3];
+		int index = 0;
+		for (int j = 0; j < 4; j++)
+		{
+			if (j != i)
+			{
+				planePoints[index] = simplex[j];
+				index++;
+			}
+		}
+		Vector3f pointWithoutPlane = simplex[i];
+		
+		Vector3f line12 = planePoints[1] - planePoints[0];
+		Vector3f line13 = planePoints[2] - planePoints[0];
+		Vector3f planeNormal = line12.cross(line13);
+		planeNormal /= sqrt(planeNormal.dot(planeNormal));
+
+		Vector3f lineToPointWithoutPlane = pointWithoutPlane - planePoints[0];
+		if (lineToPointWithoutPlane.dot(planeNormal) > 0)
+		{
+			//set plane normal orientation as outside
+			planeNormal *= -1;
+		}
+
+		float proj = -planePoints[0].dot(planeNormal);
+		if (proj > 0)
+		{
+			return false;
+		}			
+	}
+	return true;
+}
 
 
 Vector3f getNearestSimplexPoint(Simplex& simplex)
@@ -60,9 +107,26 @@ Vector3f getNearestSimplexPoint(Simplex& simplex)
 		Vector3f firstPoint = simplex[0];
 		Vector3f secondPoint = simplex[1];
 
-		Vector3f diff = firstPoint - secondPoint;
-		Vector3f cross = firstPoint.cross(secondPoint);
-		Vector3f direction = diff.cross(cross);
+		Vector3f normalForTriangleOfPointsAndOrigin = firstPoint.cross(secondPoint);
+		if(normalForTriangleOfPointsAndOrigin.isZero())
+		{
+			//simplex and origin are on the one line
+			if(firstPoint.dot(secondPoint) < 0)
+			{
+				//points are in different sides of origin
+				return Vector3f(0, 0, 0);
+			}
+			float dist1 = sqrt(firstPoint.dot(firstPoint));
+			float dist2 = sqrt(secondPoint.dot(secondPoint));
+			if(dist1 < dist2) 
+			{
+				return firstPoint;
+			}
+			return secondPoint;
+		}
+		
+		Vector3f line = firstPoint - secondPoint;
+		Vector3f direction = line.cross(normalForTriangleOfPointsAndOrigin);
 		direction /= sqrt(direction.dot(direction));
 		float lineProj = firstPoint.dot(direction);
 		Vector3f nearestLinePoint = direction * lineProj;
@@ -93,9 +157,12 @@ Vector3f getNearestSimplexPoint(Simplex& simplex)
 		Vector3f secondPoint = simplex[1];
 		Vector3f thirdPoint = simplex[2];
 
-		Vector3f diff1 = firstPoint - thirdPoint;
-		Vector3f diff2 = secondPoint - thirdPoint;
-		Vector3f normal = diff1.cross(diff2);
+		
+		//get normalized plane's normal, directed from the origin
+		Vector3f firstLine = secondPoint - thirdPoint;
+		Vector3f secondLine = firstPoint - thirdPoint;
+		Vector3f thirdLine = firstPoint - secondPoint;
+		Vector3f normal = firstLine.cross(secondLine);
 		float normalLength = sqrt(normal.dot(normal));
 		normal /= normalLength;
 		if (normal.dot(firstPoint) < 0)
@@ -103,28 +170,40 @@ Vector3f getNearestSimplexPoint(Simplex& simplex)
 			normal *= -1;
 		}
 
+		//get nearest point of the plane
 		float planeProj = thirdPoint.dot(normal);
 		Vector3f nearestPlanePoint = normal * planeProj;
 
-		float triangleArea = normalLength / 2;
-		Vector3f firstDiff = firstPoint - nearestPlanePoint;
-		Vector3f secondDiff = secondPoint - nearestPlanePoint;
-		Vector3f thirdDiff = thirdPoint - nearestPlanePoint;
-
-		Vector3f firstCross = secondDiff.cross(thirdDiff);
-		Vector3f secondCross = firstDiff.cross(thirdDiff);
-		Vector3f thirdCross = secondDiff.cross(firstDiff);
-
-		float smallTriangle1Area = sqrt(firstCross.dot(firstCross)) / 2;
-		float smallTriangle2Area = sqrt(secondCross.dot(secondCross)) / 2;
-		float smallTriangle3Area = sqrt(thirdCross.dot(thirdCross)) / 2;
-		float smallTrianglesSummArea = smallTriangle1Area + smallTriangle2Area + smallTriangle3Area;
-
-		if (abs(triangleArea - smallTrianglesSummArea) < EPSILON)
+		//check if the nearest point is inside triangle
+		Vector3f firstLineNormal = firstLine.cross(normal);
+		float firstPointProjOnFirstLineNormal = (firstPoint - secondPoint).dot(firstLineNormal);
+		if(firstPointProjOnFirstLineNormal > 0)
+		{
+			firstLineNormal *= -1;
+		}
+		float nearestProjOnFirstLineNormal = (nearestPlanePoint - secondPoint).dot(firstLineNormal);
+		Vector3f secondLineNormal = secondLine.cross(normal);
+		float secondPointProjOnSecondLineNormal = (secondPoint - thirdPoint).dot(secondLineNormal);
+		if(secondPointProjOnSecondLineNormal > 0)
+		{
+			secondLineNormal *= -1;
+		}
+		float nearestProjOnSecondLineNormal = (nearestPlanePoint - thirdPoint).dot(secondLineNormal);
+		Vector3f thirdLineNormal = thirdLine.cross(normal);
+		float thirdPointProjOnThirdLineNormal = (thirdPoint - firstPoint).dot(thirdLineNormal);
+		if(thirdPointProjOnThirdLineNormal > 0)
+		{
+			thirdLineNormal *= -1;
+		}
+		float nearestProjOnThirdLineNormal = (nearestPlanePoint - firstPoint).dot(thirdLineNormal);
+		
+		if( (nearestProjOnFirstLineNormal < 0) && (nearestProjOnSecondLineNormal < 0) && (nearestProjOnThirdLineNormal < 0) )
 		{
 			return nearestPlanePoint;
-		}
-
+		}			
+		
+		
+		//if the nearest plane point is outside triangle, find nearest point of borders
 		Simplex subSimplex1 = simplex;
 		subSimplex1.remove(0);
 		Simplex subSimplex2 = simplex;
@@ -161,7 +240,10 @@ Vector3f getNearestSimplexPoint(Simplex& simplex)
 
 	case 4:
 	{
-		
+		if(isOriginInsideSimplex(simplex))
+		{
+			return Vector3f(0, 0, 0);
+		}
 		Simplex subSimplex1 = simplex;
 		subSimplex1.remove(0);
 		Simplex subSimplex2 = simplex;
@@ -212,37 +294,6 @@ Vector3f getNearestSimplexPoint(Simplex& simplex)
   return Vector3f(0, 0, 0);
 }
 
-static bool isInsideTriangle(const Vector3f& point, Simplex& triangle)
-{
-	Vector3f lineDirection[3];
-	lineDirection[0] = triangle[2] - triangle[1];
-	lineDirection[1] = triangle[2] - triangle[0];
-	lineDirection[2] = triangle[1] - triangle[0];
-
-	Vector3f planeNormal = lineDirection[1].cross(lineDirection[2]);
-	planeNormal /= sqrt(planeNormal.dot(planeNormal));
-
-	for (int i = 0; i < 3; i++)
-	{
-		Vector3f lineNormal = lineDirection[i].cross(planeNormal);
-		int pointOnLineIndex = i + 1;
-		if (pointOnLineIndex > 2)
-		{
-			pointOnLineIndex -= 3;
-		}
-		float zeroProj = triangle[pointOnLineIndex].dot(lineNormal);
-		float checkingPointProj = point.dot(lineNormal);
-		checkingPointProj -= zeroProj;
-		float trianglePointProj = triangle[i].dot(planeNormal);
-		trianglePointProj -= zeroProj;
-		if (trianglePointProj * checkingPointProj < -EPSILON)
-		{
-			triangle.remove(i);
-			return false;
-		}
-	}
-	return true;
-}
 
 
 template <typename T1, typename T2>
@@ -336,91 +387,46 @@ static bool evolveSimplex(Simplex& simplex, const T1& volume1, const T2& volume2
 	}
 	case 4:
 	{
-		Vector3f point1 = simplex[0];
-		Vector3f point2 = simplex[1];
-		Vector3f point3 = simplex[2];
-		Vector3f point4 = simplex[3];
-
+		Vector3f nearest = getNearestSimplexPoint(simplex);
+		if(nearest.isZero())
+		{
+			simplex.erase();
+			simplex.add(nearest);
+			return true;
+		}
+		
+		Vector3f nextPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
+			rotate1, rotate2, -nearest);
+		
+		float nearestLength = sqrt(nearest.dot(nearest));
+		float nextPointProj = nextPoint.dot(nearest) / nearestLength;
+		
+		float differenceLength = nearestLength - nextPointProj;
+		if(differenceLength < EPSILON)
+		{
+			simplex.erase();
+			simplex.add(nextPoint);
+			return true;
+		}
+		
 		int deletingIndex = 0;
 		float maxProj = -INFINITY;
-		Vector3f maxProjNormal(0, 0, 0);
-		for (int i = 0; i < 4; i++)
+		for(int i = 0; i < 4; i++)
 		{
-			Vector3f planePoints[3];
-			int index = 0;
-			for (int j = 0; j < 4; j++)
+			Vector3f simplexPoint = simplex[i];
+			float projOnDirection = simplexPoint.dot(nearest);
+			if(projOnDirection > maxProj)
 			{
-				if (j != i)
-				{
-					planePoints[index] = simplex[j];
-					index++;
-				}
-			}
-			Vector3f pointWithoutPlane = simplex[i];
-			
-			Vector3f line12 = planePoints[1] - planePoints[0];
-			Vector3f line13 = planePoints[2] - planePoints[0];
-			Vector3f planeNormal = line12.cross(line13);
-			planeNormal /= sqrt(planeNormal.dot(planeNormal));
-
-			Vector3f lineToPointWithoutPlane = pointWithoutPlane - planePoints[0];
-			if (lineToPointWithoutPlane.dot(planeNormal) > 0)
-			{
-				//set plane normal orientation as outside
-				planeNormal *= -1;
-			}
-
-			float proj = -planePoints[0].dot(planeNormal);
-			if (proj > maxProj)
-			{
-				maxProj = proj;
+				maxProj = projOnDirection;
 				deletingIndex = i;
-				maxProjNormal = planeNormal;
-			}			
-		}
-
-		if (maxProj > 0)
-		{
-			simplex.remove(deletingIndex);
-
-			Vector3f nearest = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
-				rotate1, rotate2, maxProjNormal);
-			
-			float minDirectionDistance = nearest.dot(maxProjNormal);
-			if (minDirectionDistance > 0)
-			{
-				return false;
 			}
-			
-			float planeDistance = simplex[0].dot(maxProjNormal);
-			if (abs( (planeDistance - minDirectionDistance) / minDirectionDistance) < EPSILON)
-			{
-				//if the nearest point in this direction is in the simplex's plane
-				Vector3f nearestPlanePoint = -maxProjNormal * planeDistance;
-				
-				if (isInsideTriangle(nearestPlanePoint, simplex))
-				{
-					//end calculating
-					return true;
-				}
-				return false;
-				//return true;
-			}
-
-			return false;
-			// origin is outside simplex with side of this plane
 		}
-
-		//if we are here, origin is inside the simplex
-		//delete the whole simplex and add the simplex with the point zero
-		int count = simplex.size();
-		for (int i = 0; i < count; i++)
-		{
-			simplex.remove(0);
-		}
-		Vector3f zero(0, 0, 0);
-		simplex.add(zero);
-		return true;
+		
+		simplex.remove(deletingIndex);
+		simplex.add(nextPoint);
+		
+		return false;
+	
 	}
 	}	
 	return false;
