@@ -1,5 +1,7 @@
 #include "part.h"
 
+#define EPSILON 0.0001f
+
 Part::Part(const Vector3f jointPosition, const Vector3f jointAxis, bool isRotating)
 {
 	translateToParentSC = Affine3f::Identity();
@@ -29,43 +31,56 @@ void Part::setMovingLimits(float min, float max)
 	maxPosition = max;
 }
 
-void Part::updateTransform(float coordinate, float nextCoordinate)
+void Part::updateTransform(float coordinate, float speed)
 {
 	Affine3f ownTransform = translateToParentSC;
-	Affine3f nextOwnTransform = translateToParentSC;
+    Vector3f ownLinearSpeed = Vector3f(0,0,0);
+    Vector3f ownAngleSpeed = Vector3f(0,0,0);
+    
 	if (isRotating)
 	{
-		ownTransform.rotate(Eigen::AngleAxisf(coordinate, movingAxis));
-		nextOwnTransform.rotate(Eigen::AngleAxisf(nextCoordinate, movingAxis));		
+		ownTransform.rotate(Eigen::AngleAxisf(coordinate, movingAxis));	
+        ownAngleSpeed = movingAxis * speed;
 	}
 	else
 	{
 		ownTransform.translate(movingAxis * coordinate);
-		nextOwnTransform.translate(movingAxis * nextCoordinate);
+        ownLinearSpeed = movingAxis * speed;
 	}
 
 	if (parent == NULL)
 	{
 		fullTransform = ownTransform;
-		nextFullTransform = nextOwnTransform;
+        angleSpeed = ownAngleSpeed;
+        linearSpeed = ownLinearSpeed;
 	}
 	else
 	{
 		fullTransform = parent->fullTransform * ownTransform;
-		nextFullTransform = parent->nextFullTransform * nextOwnTransform;
+        Matrix3f fullRotate;// = fullTransform.linear();
+        Matrix3f parentFullRotate;// = parent->fullTransform.linear();
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                fullRotate(i, j) = fullTransform(i, j);
+                parentFullRotate(i, j) = parent->fullTransform(i, j);
+            }
+        }
+        angleSpeed = parent->angleSpeed + (fullRotate * ownAngleSpeed);
+        Vector3f parentSC_JointPosition = ownTransform * Vector3f(0,0,0);
+        linearSpeed = parent->linearSpeed + (parent->angleSpeed).cross(parentFullRotate * parentSC_JointPosition) + (fullRotate * ownLinearSpeed);
 	}
-	Matrix3f nextRotateToGlobalSC;
+    
 	for (int i = 0; i < 3; i++)
 	{
 		for (int j = 0; j < 3; j++)
 		{
 			rotateToGlobalSC(i, j) = fullTransform(i, j);
-			nextRotateToGlobalSC(i, j) = nextFullTransform(i, j);
 		}
 	}
 
 	rotateToOwnSC = rotateToGlobalSC.inverse();
-	nextRotateToOwnSC = nextRotateToGlobalSC.inverse();
 	roughBounding.update(fullTransform, rotateToGlobalSC, rotateToOwnSC);
 }
 
@@ -137,12 +152,12 @@ template <typename T1, typename T2>
 float Part::getNextCollisionTimeForPairOfVolumes(const Part& other, const T1& ownVolume, const T2& otherVolume) const
 {
 	Vector3f pairOfVolumesNearest = calculateDistanceByGJK(ownVolume, otherVolume, this->fullTransform, other.fullTransform, this->rotateToOwnSC, other.rotateToOwnSC);
-	Vector3f nextPairOfVolumesNearest = calculateDistanceByGJK(ownVolume, otherVolume, this->nextFullTransform, other.nextFullTransform, this->nextRotateToOwnSC, other.nextRotateToOwnSC);
+	//Vector3f nextPairOfVolumesNearest = calculateDistanceByGJK(ownVolume, otherVolume, this->nextFullTransform, other.nextFullTransform, this->nextRotateToOwnSC, other.nextRotateToOwnSC);
 	
-	Vector3f difference = nextPairOfVolumesNearest - pairOfVolumesNearest;
-	
+	//Vector3f difference = nextPairOfVolumesNearest - pairOfVolumesNearest;
+	/*
 	float dist = sqrt(pairOfVolumesNearest.dot(pairOfVolumesNearest));
-	float speedOfApproach = -difference.dot(pairOfVolumesNearest) / dist;
+	float speedOfApproach = 0;//-difference.dot(pairOfVolumesNearest) / dist;
 	
 	if(speedOfApproach < 0.0001f)
 	{
@@ -150,7 +165,7 @@ float Part::getNextCollisionTimeForPairOfVolumes(const Part& other, const T1& ow
 		//distance between this pair of volumes is increasing
 	}
 	
-	float nextDist = sqrt(nextPairOfVolumesNearest.dot(nextPairOfVolumesNearest));
+	float nextDist = 0;//sqrt(nextPairOfVolumesNearest.dot(nextPairOfVolumesNearest));
 	const float distancethresh = 0.1f;
 	if(nextDist < distancethresh)
 	{
@@ -159,8 +174,33 @@ float Part::getNextCollisionTimeForPairOfVolumes(const Part& other, const T1& ow
 	}
 	
 	float timeToCollision = dist / speedOfApproach;
-	
-	return timeToCollision;
+	*/
+    
+    float dist = sqrt(pairOfVolumesNearest.dot(pairOfVolumesNearest));
+    
+    const float criticalApproachDistance = 0.001f;
+    const float safeApproachDistance = 0.1f;
+    
+    if(dist < criticalApproachDistance)
+        return 0;
+    
+    Vector3f ownSC_LinearSpeed = this->rotateToOwnSC * this->linearSpeed;
+    Vector3f otherSC_LinearSpeed = other.rotateToOwnSC * other.linearSpeed;
+    Vector3f ownSC_AngleSpeed = this->rotateToOwnSC * this->angleSpeed;
+    Vector3f otherSC_AngleSpeed = other.rotateToOwnSC * other.angleSpeed;
+    
+    float ownSpeed = ownVolume.getSpeedInDirection(ownSC_LinearSpeed, ownSC_AngleSpeed, this->rotateToOwnSC * pairOfVolumesNearest);
+    float otherSpeed = otherVolume.getSpeedInDirection(otherSC_LinearSpeed, otherSC_AngleSpeed, - (other.rotateToOwnSC * pairOfVolumesNearest) );
+    
+    float speedOfApproach = ownSpeed + otherSpeed;
+    if(speedOfApproach < EPSILON)
+        return INFINITY;
+
+    if(dist < safeApproachDistance)
+        return 0;
+    
+    return (dist - safeApproachDistance) / speedOfApproach;
+	//return timeToCollision;
 }
 	
 
@@ -195,10 +235,21 @@ float Part::getNextCollisionTimeForVolume(const Part& other, const T& volume) co
 	return minTime;
 }
 
+
+
 float Part::getNextCollisionTime(const Part& other) const
 {
 	float minTime = INFINITY;
-	for (int i = 0; i < this->boxes.size(); i++)
+
+	for (int i = 0; i < this->spheres.size(); i++)
+	{
+		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->spheres[i]);
+        if(pairCollisionTime < minTime)
+		{
+			minTime = pairCollisionTime;
+		}
+	}
+    for (int i = 0; i < this->boxes.size(); i++)
 	{
 		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->boxes[i]);
 		if(pairCollisionTime < minTime)
@@ -206,17 +257,9 @@ float Part::getNextCollisionTime(const Part& other) const
 			minTime = pairCollisionTime;
 		}
 	}
-	for (int i = 0; i < this->spheres.size(); i++)
-	{
-		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->cilinders[i]);
-		if(pairCollisionTime < minTime)
-		{
-			minTime = pairCollisionTime;
-		}
-	}
 	for (int i = 0; i < this->cilinders.size(); i++)
 	{
-		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->spheres[i]);
+		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->cilinders[i]);
 		if(pairCollisionTime < minTime)
 		{
 			minTime = pairCollisionTime;

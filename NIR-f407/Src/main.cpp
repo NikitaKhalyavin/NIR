@@ -139,8 +139,8 @@ int main(void)
 	part3.setRoughBounding(Vector3f(1.5f, 3.2f, 1.3f), Vector3f(0, 1.15f, 0), zero);
 	part3.addCilinder(0.15f, 0.1f, Vector3f(0, 2.05f, 0), Vector3f(M_PI / 4, 0, 0));
 	part3.addSphere(0.26f, Vector3f(0, 2.343f, 0), Vector3f(0, 0, 0));
-	part3.addBox(Vector3f(0.5f, 0.6f, 0.6f), Vector3f(0, 0.32f, 0), zero);
-	part3.addBox(Vector3f(0.5f, 0.6f, 0.6f), Vector3f(0, 2.28f, 0), zero);
+	part3.addBox(Vector3f(0.3f, 1.0f, 0.3f), Vector3f(0, 1.5f, 0), zero);
+	part3.addBox(Vector3f(0.6f, 1.3f, 0.3f), Vector3f(0, 0.52f, 0), zero);
   
 	Robot robot;
 	
@@ -194,12 +194,12 @@ int main(void)
 		if(zMinus && !(zPlus))
 			speed[3] = -targetSpeed;
 		
-		for(int i = 0; i < numberOfParts; i++)
+    for(int i = 0; i < numberOfParts; i++)
     {
       nextPosition[i] = position[i] + speed[i];
     }
     
-		float slowdown = robot.getSlowdownCoefficient(position, nextPosition, numberOfParts);
+    float slowdown = robot.getSlowdownCoefficient(position, speed, numberOfParts);
     
     for(int i = 0; i < numberOfParts; i++)
     {

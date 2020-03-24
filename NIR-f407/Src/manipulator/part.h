@@ -19,8 +19,8 @@ private:
 	Matrix3f rotateToOwnSC;
 	Matrix3f rotateToGlobalSC;
 	
-	Affine3f nextFullTransform;
-	Matrix3f nextRotateToOwnSC;
+	Vector3f linearSpeed;
+    Vector3f angleSpeed;
 	
 	bool isRotating;
 	Vector3f movingAxis;
@@ -55,7 +55,7 @@ public:
 	void addCilinder(float  radius, float highest, const Vector3f position, const Vector3f angles);
 
 
-	void updateTransform(float coordinate, float nextCoordinate);
+	void updateTransform(float coordinate, float speed);
 
 	bool checkRoughBoundingCollision(const Part& other) const;
 	float getNextCollisionTime(const Part& other) const;

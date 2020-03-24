@@ -26,4 +26,5 @@ public:
 	void create(const Vector3f sizes);
 
 	Vector3f supportFunction(const Vector3f& direction) const;
+    float getSpeedInDirection(const Vector3f& partLinearSpeed, const Vector3f& partAngleSpeed, const Vector3f& distance) const;
 };

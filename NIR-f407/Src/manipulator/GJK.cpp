@@ -77,15 +77,13 @@ bool isOriginInsideSimplex(Simplex& simplex)
 		planeNormal /= sqrt(planeNormal.dot(planeNormal));
 
 		Vector3f lineToPointWithoutPlane = pointWithoutPlane - planePoints[0];
-		if (lineToPointWithoutPlane.dot(planeNormal) > 0)
+        
+        float pointProj = pointWithoutPlane.dot(planeNormal);
+        float planeProj = planePoints[0].dot(planeNormal);
+        
+		if ( ( (pointProj > 0) && (planeProj > 0) ) || ( (pointProj < 0) && (planeProj < 0) ) )
 		{
-			//set plane normal orientation as outside
-			planeNormal *= -1;
-		}
-
-		float proj = -planePoints[0].dot(planeNormal);
-		if (proj > 0)
-		{
+            //if the plain and the point are on the same side
 			return false;
 		}			
 	}
@@ -300,9 +298,9 @@ template <typename T1, typename T2>
 static Vector3f getMaxExtremalPoint(const T1& volume1, const T2& volume2, const Affine3f& transform1,
 	const Affine3f& transform2, const Matrix3f& rotate1, const Matrix3f& rotate2, const Vector3f& direction)
 {
-	Vector3f extremalPoint1 = transform1 * (volume1.supportFunction(rotate1 * direction));
-	Vector3f extremalPoint2 = transform2 * (volume2.supportFunction(rotate2 * (-direction)));
-	Vector3f maxPoint = extremalPoint1 - extremalPoint2;
+	Vector3f extremalPoint1 = transform1 * (volume1.supportFunction(rotate1 * (-direction)));
+	Vector3f extremalPoint2 = transform2 * (volume2.supportFunction(rotate2 * direction));
+	Vector3f maxPoint = -extremalPoint1 + extremalPoint2;
 	return maxPoint;
 }
 
@@ -316,73 +314,95 @@ static bool evolveSimplex(Simplex& simplex, const T1& volume1, const T2& volume2
 	{
 	case 0:
 	{
-		//initialize the simplex by 4 points in tetrahedron directions
+		//initialize the simplex by 1 point in constant direction
 		direction = Vector3f(1, 0, 0);
-		Vector3f extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
+		Vector3f nextPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
 			rotate1, rotate2, direction);
-		simplex.add(extremalPoint);
+
+        //check if origin is inside simplex
+        if(nextPoint.isZero())
+		{
+			simplex.add(nextPoint);
+			return true;
+		}
+		simplex.add(nextPoint);
 		
-		direction = Vector3f(-0.33333f, 0.9428f, 0);
-		extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
-			rotate1, rotate2, direction);
-		simplex.add(extremalPoint);
-		
-		direction = Vector3f(-0.33333f, -0.4714f, 0.8165f);
-		extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
-			rotate1, rotate2, direction);
-		simplex.add(extremalPoint);
-		
-		direction = Vector3f(-0.33333f, -0.4714f, -0.8165f);
-		extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
-			rotate1, rotate2, direction);
-		simplex.add(extremalPoint);
 		break;
 	}
 	case 1:
 	{
-		direction *= -1;
-		Vector3f extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
+        //add second point
+		Vector3f nearest = getNearestSimplexPoint(simplex);
+        direction = -nearest;
+		Vector3f nextPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
 			rotate1, rotate2, direction);
-		simplex.add(extremalPoint);
+
+        //check if first point is the nearest
+        float nearestLength = sqrt(nearest.dot(nearest));
+		float nextPointProj = nextPoint.dot(nearest) / nearestLength;
+		
+		float differenceLength = nearestLength - nextPointProj;
+		if(differenceLength < EPSILON)
+		{
+			simplex.erase();
+			simplex.add(nearest);
+			return true;
+		}
+		simplex.add(nextPoint);
 		break;
 	}
 	case 2:
 	{
-		Vector3f point1 = simplex[0];
-		Vector3f point2 = simplex[1];
-		if (point1.cross(point2).isZero())
+		Vector3f nearest = getNearestSimplexPoint(simplex);
+		if(nearest.isZero())
 		{
-			//turn point1 on 90 degres in xOy plane
-			direction(0) = -point1(1);
-			direction(1) = point1(0);
-			direction(2) = point1(2);
+			simplex.erase();
+			simplex.add(nearest);
+			return true;
 		}
-		else
+		
+		Vector3f nextPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
+			rotate1, rotate2, -nearest);
+		
+		float nearestLength = sqrt(nearest.dot(nearest));
+		float nextPointProj = nextPoint.dot(nearest) / nearestLength;
+		
+		float differenceLength = nearestLength - nextPointProj;
+		if(differenceLength < EPSILON)
 		{
-			direction = point1.cross(point2);
+			simplex.erase();
+			simplex.add(nearest);
+			return true;
 		}
-		Vector3f extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
-			rotate1, rotate2, direction);
-		simplex.add(extremalPoint);
+		
+		simplex.add(nextPoint);
 		break;
 	}
 	case 3:
 	{
-		Vector3f point1 = simplex[0];
-		Vector3f point2 = simplex[1];
-		Vector3f point3 = simplex[2];
-
-		Vector3f line13 = point1 - point3;
-		Vector3f line23 = point2 - point3;
-		direction = line13.cross(line23);
-		if (point1.dot(direction) > 0)
+        Vector3f nearest = getNearestSimplexPoint(simplex);
+		if(nearest.isZero())
 		{
-			direction *= -1;
+			simplex.erase();
+			simplex.add(nearest);
+			return true;
 		}
-
-		Vector3f extremalPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
-			rotate1, rotate2, direction);
-		simplex.add(extremalPoint);
+		
+		Vector3f nextPoint = getMaxExtremalPoint(volume1, volume2, transform1, transform2, 
+			rotate1, rotate2, -nearest);
+		
+		float nearestLength = sqrt(nearest.dot(nearest));
+		float nextPointProj = nextPoint.dot(nearest) / nearestLength;
+		
+		float differenceLength = nearestLength - nextPointProj;
+		if(differenceLength < EPSILON)
+		{
+			simplex.erase();
+			simplex.add(nearest);
+			return true;
+		}
+		
+		simplex.add(nextPoint);
 		break;
 	}
 	case 4:
@@ -405,7 +425,7 @@ static bool evolveSimplex(Simplex& simplex, const T1& volume1, const T2& volume2
 		if(differenceLength < EPSILON)
 		{
 			simplex.erase();
-			simplex.add(nextPoint);
+			simplex.add(nearest);
 			return true;
 		}
 		

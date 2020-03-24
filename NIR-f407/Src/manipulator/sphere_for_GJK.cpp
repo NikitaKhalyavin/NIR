@@ -37,3 +37,17 @@ Vector3f Sphere_GJK::supportFunction(const Vector3f& direction) const
 	temp *= radius;
 	return transformToParent * temp;
 }
+
+float Sphere_GJK::getSpeedInDirection(const Vector3f& partLinearSpeed, const Vector3f& partAngleSpeed, const Vector3f& distance) const
+{
+    Vector3f ownSC_Distance = fromPartSC * distance;
+    
+    Vector3f zeroOnPartPosition = transformToParent * Vector3f(0,0,0);
+    Vector3f linearSpeed = partLinearSpeed + partAngleSpeed.cross(zeroOnPartPosition); 
+    Vector3f ownSC_LinearSpeed = fromPartSC * linearSpeed;
+    
+    float distanceLength = sqrt(ownSC_Distance.dot(ownSC_Distance));
+    float speed = ownSC_LinearSpeed.dot(ownSC_Distance) / distanceLength;
+    
+    return speed;
+}

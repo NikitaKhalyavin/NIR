@@ -19,7 +19,7 @@ float Robot::getSlowdownCoefficient(const float* currentConfiguration, const flo
 {
 
 	const float safeDistance = 0.1;
-	const float minAllowedTime = 0.1;
+	const float minAllowedTime = 10;
 	
 	if(numberOfParts != parts.size())
 	{
