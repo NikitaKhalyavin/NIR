@@ -71,10 +71,12 @@ float Cilinder_GJK::getSpeedInDirection(const Vector3f& partLinearSpeed, const V
     
     
     //cam speed calculation for cylinders is the same as for boxes, but cylinders are invariant for horizontal turning
-    float angleVertical = atan2(distanceDirection(1), sqrt( pow(distanceDirection(0),2) + pow(distanceDirection(2),2) ));
+    float angleHorizontal = atan2(distanceDirection(0), distanceDirection(1));
+    float angleVertical = atan2(distanceDirection(2), sqrt( pow(distanceDirection(0),2) + pow(distanceDirection(1),2) ));
     
     //Go to separating flat CS
     float angleX = -angleVertical;
+    float angleZ = -angleHorizontal;
     
     //So, we can use equals for rectangles to simulate a cylinder
     //while angles are zeros any box axis is equals to appropriate SP's axis
@@ -126,16 +128,29 @@ float Cilinder_GJK::getSpeedInDirection(const Vector3f& partLinearSpeed, const V
     
     float Fi_0 = atan2(this->highest, this->radius);
     
-    Matrix3f turnToPlaneSc;
-    turnToPlaneSc(0,0) = 1;
-    turnToPlaneSc(0,1) = 0;
-    turnToPlaneSc(0,2) = 0;
-    turnToPlaneSc(1,0) = 0;
-    turnToPlaneSc(1,1) = cos(angleX);
-    turnToPlaneSc(1,2) = -sin(angleX);
-    turnToPlaneSc(2,0) = 0;
-    turnToPlaneSc(2,1) = sin(angleX);
-    turnToPlaneSc(2,2) = cos(angleX);
+    Matrix3f turnToPlaneScStep1;
+    turnToPlaneScStep1(0,0) = cos(angleZ);
+    turnToPlaneScStep1(0,1) = -sin(angleZ);
+    turnToPlaneScStep1(0,2) = 0;
+    turnToPlaneScStep1(1,0) = sin(angleZ);
+    turnToPlaneScStep1(1,1) = cos(angleZ);
+    turnToPlaneScStep1(1,2) = 0;
+    turnToPlaneScStep1(2,0) = 0;
+    turnToPlaneScStep1(2,1) = 0;
+    turnToPlaneScStep1(2,2) = 1;
+    
+    Matrix3f turnToPlaneScStep2;
+    turnToPlaneScStep2(0,0) = 1;
+    turnToPlaneScStep2(0,1) = 0;
+    turnToPlaneScStep2(0,2) = 0;
+    turnToPlaneScStep2(1,0) = 0;
+    turnToPlaneScStep2(1,1) = cos(angleX);
+    turnToPlaneScStep2(1,2) = -sin(angleX);
+    turnToPlaneScStep2(2,0) = 0;
+    turnToPlaneScStep2(2,1) = sin(angleX);
+    turnToPlaneScStep2(2,2) = cos(angleX);
+    
+    Matrix3f turnToPlaneSc = turnToPlaneScStep1 * turnToPlaneScStep2;
     
     Vector3f angleSpeedInPlaneSC = turnToPlaneSc * partAngleSpeed;
     

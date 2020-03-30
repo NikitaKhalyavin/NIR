@@ -1,6 +1,7 @@
 
 #include "pch.h"
 #include "main_interface.h"
+#include "../time_measurement.h"
 
 void Robot::addPart(Part* newPart)
 {
@@ -15,9 +16,13 @@ void Robot::addPairOfPartsForChecking(Part* part1, Part* part2)
 	pairsOfPartsForChecking.push_back(newPair);
 }
 
+
+TimeStatisticCollector TimeCalculating_Statistic;
+TimeStatisticCollector Common_Statistic;
+
 float Robot::getSlowdownCoefficient(const float* currentConfiguration, const float* nextConfiguration, int numberOfParts)
 {
-
+    Common_Statistic.startMeasurement();
 	const float safeDistance = 0.1;
 	const float minAllowedTime = 10;
 	
@@ -67,6 +72,7 @@ float Robot::getSlowdownCoefficient(const float* currentConfiguration, const flo
 
 	for (int i = 0; i < pairsOfPartsForChecking.size(); i++)
 	{
+        TimeCalculating_Statistic.startMeasurement();
 		Part* firstPart = pairsOfPartsForChecking[i].part1;
 		Part* secondPart = pairsOfPartsForChecking[i].part2;
 		bool isNearSecondPart = firstPart->checkRoughBoundingCollision(*secondPart);
@@ -78,6 +84,7 @@ float Robot::getSlowdownCoefficient(const float* currentConfiguration, const flo
 				minTime = time;
 			}
 		}
+        TimeCalculating_Statistic.stopMeasurement();
 	}
 
 	if(minTime < minAllowedTime)
@@ -86,7 +93,7 @@ float Robot::getSlowdownCoefficient(const float* currentConfiguration, const flo
 		if(slowdown < coefficientOfSlowdown)
 			coefficientOfSlowdown = slowdown;
 	}
-	
+	Common_Statistic.stopMeasurement();
 	return coefficientOfSlowdown;
 }
 

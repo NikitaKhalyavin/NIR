@@ -173,26 +173,29 @@ float OBB_GJK::getSpeedInDirection(const Vector3f& partLinearSpeed, const Vector
     float Fi_0Y = atan2(localSC_Sizes(0), localSC_Sizes(2));
     float Fi_0X = atan2(localSC_Sizes(1), localSC_Sizes(2));
     
-    Matrix3f turnToPlaneSc;
-    turnToPlaneSc(0,0) = cos(angleY);
-    turnToPlaneSc(0,1) = 0;
-    turnToPlaneSc(0,2) = -sin(angleY);
-    turnToPlaneSc(1,0) = 0;
-    turnToPlaneSc(1,1) = 1;
-    turnToPlaneSc(1,2) = 0;
-    turnToPlaneSc(2,0) = sin(angleY);
-    turnToPlaneSc(2,1) = 0;
-    turnToPlaneSc(2,2) = cos(angleY);
+    Matrix3f turnToPlaneScStep1;
+    turnToPlaneScStep1(0,0) = cos(angleY);
+    turnToPlaneScStep1(0,1) = 0;
+    turnToPlaneScStep1(0,2) = -sin(angleY);
+    turnToPlaneScStep1(1,0) = 0;
+    turnToPlaneScStep1(1,1) = 1;
+    turnToPlaneScStep1(1,2) = 0;
+    turnToPlaneScStep1(2,0) = sin(angleY);
+    turnToPlaneScStep1(2,1) = 0;
+    turnToPlaneScStep1(2,2) = cos(angleY);
     
-    turnToPlaneSc(0,0) *= 1;
-    turnToPlaneSc(0,1) *= 0;
-    turnToPlaneSc(0,2) *= 0;
-    turnToPlaneSc(1,0) *= 0;
-    turnToPlaneSc(1,1) *= cos(angleX);
-    turnToPlaneSc(1,2) *= -sin(angleX);
-    turnToPlaneSc(2,0) *= 0;
-    turnToPlaneSc(2,1) *= sin(angleX);
-    turnToPlaneSc(2,2) *= cos(angleX);
+    Matrix3f turnToPlaneScStep2;
+    turnToPlaneScStep2(0,0) = 1;
+    turnToPlaneScStep2(0,1) = 0;
+    turnToPlaneScStep2(0,2) = 0;
+    turnToPlaneScStep2(1,0) = 0;
+    turnToPlaneScStep2(1,1) = cos(angleX);
+    turnToPlaneScStep2(1,2) = -sin(angleX);
+    turnToPlaneScStep2(2,0) = 0;
+    turnToPlaneScStep2(2,1) = sin(angleX);
+    turnToPlaneScStep2(2,2) = cos(angleX);
+    
+    Matrix3f turnToPlaneSc = turnToPlaneScStep1 * turnToPlaneScStep2;
     
     Vector3f angleSpeedInPlaneSC = turnToPlaneSc * partAngleSpeed;
     

@@ -97,27 +97,23 @@ bool OBB::checkCollisionByGSK_Vector(const OBB& other, Vector3f& GSK_Vector) con
 	return true;
 }
 
-void actionBeforeReturning()
-{
-	int iterationTime = getTimeMCS();
-	stopMeasurement();
-	addTimeValueForSAT_Statistic(iterationTime);
-}
+
+TimeStatisticCollector SAT_Statistic;
 
 bool OBB::checkCollisionBySAT(const OBB& other) const
 {
-	startMeasurement();
+	SAT_Statistic.startMeasurement();
 	//check own axis of boxes
 	for (unsigned int i = 0; i < 3; i++)
 	{
 		if (!this->checkCollisionByGuideVector(other, i))
 		{
-			actionBeforeReturning();
+			SAT_Statistic.stopMeasurement();
 			return false;
 		}
 		if (!other.checkCollisionByGuideVector(*this, i))
 		{
-			actionBeforeReturning();
+			SAT_Statistic.stopMeasurement();
 			return false;
 		}
 	}
@@ -131,17 +127,17 @@ bool OBB::checkCollisionBySAT(const OBB& other) const
 
 			if (GSK_Vector.isZero())
 			{
-				actionBeforeReturning();
+				SAT_Statistic.stopMeasurement();
 				return true;
 			}
 			if (!this->checkCollisionByGSK_Vector(other, GSK_Vector))
 			{
-				actionBeforeReturning();
+				SAT_Statistic.stopMeasurement();
 				return false;
 			}
 
 		}
 	}
-	actionBeforeReturning();
+	SAT_Statistic.stopMeasurement();
 	return true;
 }

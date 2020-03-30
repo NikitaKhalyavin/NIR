@@ -3,33 +3,40 @@
 #include "main.h"
 
 extern TIM_HandleTypeDef htim3;
-unsigned int timerOverflowCount;
+uint32_t timerOverflowCount;
 
-void startMeasurement()
+int TimeStatisticCollector::activeObjectsCount = 0;
+
+void TimeStatisticCollector::startMeasurement()
 {
-  HAL_TIM_Base_Stop(&htim3);
-  timerOverflowCount = 0;
-  TIM3->CNT = 0;
-  HAL_TIM_Base_Start(&htim3);
+    startTimeMCS = getTimeMCS();
+    if(activeObjectsCount == 0)
+        HAL_TIM_Base_Start(&htim3);
+    activeObjectsCount++;
 }
 
-void stopMeasurement()
+void TimeStatisticCollector::stopMeasurement()
 {
-  HAL_TIM_Base_Stop(&htim3);
-  timerOverflowCount = 0;
-  TIM3->CNT = 0;
+    int endTimeMCS = getTimeMCS();
+    activeObjectsCount--;
+    if(activeObjectsCount == 0)
+    {    
+        HAL_TIM_Base_Stop(&htim3);
+        timerOverflowCount = 0;
+        TIM3->CNT = 0;
+    }
+    addValue(endTimeMCS - startTimeMCS);
 }
 
-int getTimeMCS()
+int TimeStatisticCollector::getTimeMCS()
 {
-  HAL_TIM_Base_Stop(&htim3);
   unsigned int result = TIM3->CNT;
   result += timerOverflowCount * 1000;
-  HAL_TIM_Base_Start(&htim3);
   return result;
 }
 
-void TimeStatisticData::addValue(int time)
+
+void TimeStatisticCollector::addValue(int time)
 {
   if(time < minIterationTime)
   {
@@ -42,16 +49,4 @@ void TimeStatisticData::addValue(int time)
   sumOfIterationTimes += time;
   numberOfIterations++;
   averageIterationTime = sumOfIterationTimes / (float)numberOfIterations;
-}
-
-TimeStatisticData GJK_Statistic;
-TimeStatisticData SAT_Statistic;
-
-void addTimeValueForGJK_Statistic(int time)
-{
-  GJK_Statistic.addValue(time);
-}
-void addTimeValueForSAT_Statistic(int time)
-{
-  SAT_Statistic.addValue(time);
 }

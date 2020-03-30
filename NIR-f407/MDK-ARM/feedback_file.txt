@@ -1,13 +1,12 @@
-;#<FEEDBACK># ARM Linker, 5060061: Last Updated: Tue Mar 24 21:41:58 2020
+;#<FEEDBACK># ARM Linker, 5060061: Last Updated: Sun Mar 29 14:16:29 2020
 ;VERSION 0.2
 ;FILE bounding_volume.o
 _ZN14BoundingVolume20setTransformToParentEN5Eigen9TransformIfLi3ELi2ELi0EEE <= USED 0
 ;FILE box_for_gjk.o
-_ZN5Eigen13CwiseBinaryOpINS_8internal17scalar_product_opIffEEKNS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEKNS_5BlockIKNS4_IfLi3ELi3ELi0ELi3ELi3EEELi3ELi1ELb1EEEEC1ERS6_RSB_RKS3_ <= USED 0
-;FILE cilinder_for_gjk.o
-;FILE gjk.o
 _ZN5Eigen13CwiseBinaryOpINS_8internal17scalar_product_opIffEEKNS_9TransposeIKNS_5BlockIKNS_6MatrixIfLi3ELi3ELi0ELi3ELi3EEELi1ELi3ELb0EEEEEKNS5_IKNS6_IfLi3ELi1ELi0ELi3ELi1EEELi3ELi1ELb1EEEEC1ERSC_RSG_RKS3_ <= USED 0
 _ZNK5Eigen9DenseBaseINS_13CwiseBinaryOpINS_8internal17scalar_product_opIffEEKNS_9TransposeIKNS_5BlockIKNS_6MatrixIfLi3ELi3ELi0ELi3ELi3EEELi1ELi3ELb0EEEEEKNS6_IKNS7_IfLi3ELi1ELi0ELi3ELi1EEELi3ELi1ELb1EEEEEE5reduxINS2_13scalar_sum_opIffEEEEfRKT_ <= USED 0
+;FILE cilinder_for_gjk.o
+;FILE gjk.o
 ;FILE main.o
 _ZN4__rw12__string_refIcSt11char_traitsIcESaIcEE4dataEv <= USED 0
 _ZN4__rw15__rw_facet_baseD0Ev <= USED 0
@@ -76,6 +75,7 @@ _sys_command_string <= USED 0
 fgetc <= USED 0
 ;FILE sphere_for_gjk.o
 _ZN5Eigen13CwiseBinaryOpINS_8internal17scalar_product_opIffEEKNS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEKNS_14CwiseNullaryOpINS1_18scalar_constant_opIfEES6_EEEC1ERS6_RSB_RKS3_ <= USED 0
+_ZN5Eigen13CwiseBinaryOpINS_8internal17scalar_product_opIffEEKNS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEKNS_5BlockIKNS4_IfLi3ELi3ELi0ELi3ELi3EEELi3ELi1ELb1EEEEC1ERS6_RSB_RKS3_ <= USED 0
 ;FILE startup_stm32f407xx.o
 ;FILE stm32f4xx_hal.o
 HAL_DBGMCU_DisableDBGSleepMode <= USED 0
@@ -406,6 +406,6 @@ __asm___18_system_stm32f4xx_c_5d646a67____REV16 <= USED 0
 __asm___18_system_stm32f4xx_c_5d646a67____REVSH <= USED 0
 __asm___18_system_stm32f4xx_c_5d646a67____RRX <= USED 0
 ;FILE time_measurement.o
-__asm___20_time_measurement_cpp_7b6e58ff___Z5__RRXj <= USED 0
-__asm___20_time_measurement_cpp_7b6e58ff___Z7__REV16j <= USED 0
-__asm___20_time_measurement_cpp_7b6e58ff___Z7__REVSHs <= USED 0
+__asm___20_time_measurement_cpp_ae9d6657___Z5__RRXj <= USED 0
+__asm___20_time_measurement_cpp_ae9d6657___Z7__REV16j <= USED 0
+__asm___20_time_measurement_cpp_ae9d6657___Z7__REVSHs <= USED 0

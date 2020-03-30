@@ -28,7 +28,6 @@
 
 #include "../Src/correct_Eigen_include.h"
 #include "../Src/manipulator/main_interface.h"
-//#include "../Src/manipulator.h"
 
 /* USER CODE END Includes */
 
@@ -41,6 +40,13 @@
 /* USER CODE BEGIN PD */
 
 #define M_PI 3.1415926535897932384626433832795
+
+#define KINEMATIC_SCHEME_1 0
+#define KINEMATIC_SCHEME_2 1
+
+#define CURRENT_KINEMATIC_SCHEME KINEMATIC_SCHEME_2
+
+
 
 /* USER CODE END PD */
 
@@ -116,20 +122,43 @@ int main(void)
 	basePart.setRoughBounding(baseSize, zero, zero);
 	basePart.addBox(baseSize, zero, zero);
 
+
+    Vector3f obs1Pos(-1.75f, 1.25f, 0);
+	Part obstacle1(obs1Pos, Vector3f::UnitY(), true);
+    obstacle1.setParent(&basePart);
+	obstacle1.setRoughBounding(Vector3f(1, 2.4f, 1.6f), Vector3f(0, 0.45f, 0), zero);
+	obstacle1.addBox(Vector3f(0.5f, 1.5f, 1.0f), zero, zero);
+	obstacle1.addCilinder(0.5f, 0.8f, Vector3f(0, 1.15f, 0), zero);
+    
+    Vector3f obs2Pos(4, 2, 0);
+	Part obstacle2(obs2Pos, Vector3f::UnitY(), true);
+    obstacle2.setParent(&basePart);
+	obstacle2.setRoughBounding(Vector3f(4, 4, 4), zero, zero);
+	obstacle2.addBox(Vector3f(4, 4, 4), zero, zero);
+	
+    Vector3f obs3Pos(-2, 3, 2);
+	Part obstacle3(obs3Pos, Vector3f::UnitY(), true);
+    obstacle3.setParent(&basePart);
+	obstacle3.setRoughBounding(Vector3f(0.5f, 6.25f, 0.5f), Vector3f(0, 0.125f, 0), zero);
+	obstacle3.addCilinder(0.05f, 3, zero, Vector3f(M_PI / 2, 0, 0));
+    obstacle3.addSphere(0.25f, Vector3f(0,3,0), zero);
+
+#if CURRENT_KINEMATIC_SCHEME == KINEMATIC_SCHEME_1
+
 	Vector3f joint1(0, 0.5f, 0);
 	Part part1(joint1, Vector3f::UnitY(), true);
 	part1.setParent(&basePart);
 	part1.setRoughBounding(Vector3f(1, 2.6f, 1), Vector3f(0, 1.3f, 0), zero);
-	part1.addCilinder(0.5f, 0.25f, Vector3f(0, 0.25f, 0), Vector3f(M_PI / 4, 0, 0));
-	part1.addCilinder(0.3f, 1, Vector3f(0, 1.4f, 0), Vector3f(M_PI / 4, 0, 0));
+	part1.addCilinder(0.5f, 0.25f, Vector3f(0, 0.25f, 0), Vector3f(M_PI / 2, 0, 0));
+	part1.addCilinder(0.3f, 1, Vector3f(0, 1.4f, 0), Vector3f(M_PI / 2, 0, 0));
 	
 	Vector3f joint2(0, 2.4f, 0);
 	Part part2(joint2, Vector3f::UnitZ(), true);
 	part2.setParent(&part1);
 	part2.setRoughBounding(Vector3f(1, 3.5f, 1), Vector3f(0, 1.3f, 0), zero);
-	part2.addCilinder(0.2f, 0.7f, Vector3f(0, 1.3f, 0), Vector3f(M_PI / 4, 0, 0));
-	part2.addCilinder(0.25f, 0.3f, Vector3f(0, 0, 0), Vector3f(0, 0, 0));
-	part2.addCilinder(0.25f, 0.3f, Vector3f(0, 2.6f, 0), Vector3f(0, 0, 0));
+	part2.addCilinder(0.2f, 0.7f, Vector3f(0, 1.3f, 0), Vector3f(M_PI / 2, 0, 0));
+	part2.addCilinder(0.25f, 0.3f, zero, zero);
+	part2.addCilinder(0.25f, 0.3f, Vector3f(0, 2.6f, 0), zero);
 	part2.addBox(Vector3f(0.5f, 0.6f, 0.6f), Vector3f(0, 0.32f, 0), zero);
 	part2.addBox(Vector3f(0.5f, 0.6f, 0.6f), Vector3f(0, 2.28f, 0), zero);
 
@@ -137,14 +166,44 @@ int main(void)
 	Part part3(joint3, Vector3f::UnitZ(), true);
 	part3.setParent(&part2);
 	part3.setRoughBounding(Vector3f(1.5f, 3.2f, 1.3f), Vector3f(0, 1.15f, 0), zero);
-	part3.addCilinder(0.15f, 0.1f, Vector3f(0, 2.05f, 0), Vector3f(M_PI / 4, 0, 0));
-	part3.addSphere(0.26f, Vector3f(0, 2.343f, 0), Vector3f(0, 0, 0));
+	part3.addCilinder(0.15f, 0.1f, Vector3f(0, 2.05f, 0), Vector3f(M_PI / 2, 0, 0));
+	part3.addSphere(0.26f, Vector3f(0, 2.343f, 0), zero);
 	part3.addBox(Vector3f(0.3f, 1.0f, 0.3f), Vector3f(0, 1.5f, 0), zero);
 	part3.addBox(Vector3f(0.6f, 1.3f, 0.3f), Vector3f(0, 0.52f, 0), zero);
-  
+
+#else
+
+    Vector3f joint1(0, 0.5f, 0);
+	Part part1(joint1, Vector3f::UnitY(), true);
+	part1.setParent(&basePart);
+	part1.setRoughBounding(Vector3f(1, 0.9f, 1), Vector3f(0, 0.45f, 0), zero);
+	part1.addCilinder(0.5f, 0.05f, Vector3f(0, 0.05f, 0), Vector3f(M_PI / 2, 0, 0));
+	part1.addCilinder(0.3f, 0.25f, Vector3f(0, 0.6f, 0), Vector3f(0, M_PI / 2, 0));
+	part1.addBox(Vector3f(0.5f, 0.5f, 0.6f), Vector3f(0, 0.35f, 0), zero);
+    
+	Vector3f joint2(0, 0.6f, 0);
+	Part part2(joint2, Vector3f::UnitX(), true);
+	part2.setParent(&part1);
+	part2.setRoughBounding(Vector3f(0.5f, 1.2f, 1), Vector3f(0, 0.175f, 0), zero);
+	part2.addCilinder(0.3f, 0.15f, zero, Vector3f(0, M_PI / 2, 0));
+	part2.addCilinder(0.15f, 0.3f, Vector3f(0, 0.52f, 0), zero);
+	part2.addBox(Vector3f(0.3f, 0.5f, 0.6f), Vector3f(0, 0.25f, 0), zero);
+
+	Vector3f joint3(0, 0.5f, 0);
+	Part part3(joint3, Vector3f::UnitZ(), false);
+	part3.setParent(&part2);
+	part3.setRoughBounding(Vector3f(1.5f, 1.5f, 7), Vector3f(0, 0, 1.6f), zero);
+	part3.addCilinder(0.075f, 2.6f, Vector3f(0, 0, 1.9f), zero);
+	part3.addSphere(0.3f, Vector3f(0, 0, -1), zero);
+
+#endif
+
 	Robot robot;
 	
 	robot.addPart(&basePart);
+    robot.addPart(&obstacle1);
+    robot.addPart(&obstacle2);
+    robot.addPart(&obstacle3);
 	robot.addPart(&part1);
 	robot.addPart(&part2);
 	robot.addPart(&part3);
@@ -152,11 +211,18 @@ int main(void)
 	robot.addPairOfPartsForChecking(&part2, &basePart);
 	robot.addPairOfPartsForChecking(&part3, &basePart);
 	robot.addPairOfPartsForChecking(&part3, &part1);
+    
+    robot.addPairOfPartsForChecking(&part2, &obstacle1);
+	robot.addPairOfPartsForChecking(&part3, &obstacle1);
+    robot.addPairOfPartsForChecking(&part2, &obstacle2);
+	robot.addPairOfPartsForChecking(&part3, &obstacle2);
+    robot.addPairOfPartsForChecking(&part2, &obstacle3);
+	robot.addPairOfPartsForChecking(&part3, &obstacle3);
   
-  const int numberOfParts = 4;
-  float position[numberOfParts] = {0, 0, 0, 0};
-	float nextPosition[numberOfParts] = {0, 0, 0, 0};
-  float speed[numberOfParts] = {0, 0, 0, 0};
+  const int numberOfParts = 7;
+  float position[numberOfParts] = {0, 0, 0, 0, 0, 0, 0};
+	float nextPosition[numberOfParts] = {0, 0, 0, 0, 0, 0, 0};
+  float speed[numberOfParts] = {0, 0, 0, 0, 0, 0, 0};
 	
   /* USER CODE END 2 */
 
@@ -174,25 +240,25 @@ int main(void)
 		bool zPlus  = !HAL_GPIO_ReadPin(AxisZ_P_GPIO_Port, AxisZ_P_Pin);
 		bool zMinus = !HAL_GPIO_ReadPin(AxisZ_M_GPIO_Port, AxisZ_M_Pin);
 		
-		for(int i = 1; i < 4; i++)
+		for(int i = 4; i < numberOfParts; i++)
 		{
 			speed[i] = 0;
 		}
 		
 		if(xPlus && !(xMinus))
-			speed[1] = targetSpeed;
+			speed[4] = targetSpeed;
 		if(xMinus && !(xPlus))
-			speed[1] = -targetSpeed;
+			speed[4] = -targetSpeed;
 		
 		if(yPlus && !(yMinus))
-			speed[2] = targetSpeed;
+			speed[5] = targetSpeed;
 		if(yMinus && !(yPlus))
-			speed[2] = -targetSpeed;
+			speed[5] = -targetSpeed;
 		
 		if(zPlus && !(zMinus))
-			speed[3] = targetSpeed;
+			speed[6] = targetSpeed;
 		if(zMinus && !(zPlus))
-			speed[3] = -targetSpeed;
+			speed[6] = -targetSpeed;
 		
     for(int i = 0; i < numberOfParts; i++)
     {
@@ -207,9 +273,9 @@ int main(void)
     }
 		
 		//number of parts - 1 brcause the base can't move
-		const int arraySize = (numberOfParts - 1) * sizeof(float);
+		const int arraySize = (numberOfParts - 4) * sizeof(float);
 		uint8_t sendBuffer[arraySize + 2];
-		memcpy(&sendBuffer[2], &position[1], arraySize);
+		memcpy(&sendBuffer[2], &position[4], arraySize);
 		sendBuffer[0] = 'S';
 		sendBuffer[1] = 'T';
 		
