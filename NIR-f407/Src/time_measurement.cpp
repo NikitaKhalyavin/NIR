@@ -2,36 +2,44 @@
 
 #include "main.h"
 
-extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim1;
 uint32_t timerOverflowCount;
 
 int TimeStatisticCollector::activeObjectsCount = 0;
 
 void TimeStatisticCollector::startMeasurement()
 {
-    startTimeMCS = getTimeMCS();
     if(activeObjectsCount == 0)
-        HAL_TIM_Base_Start(&htim3);
+    {
+        HAL_TIM_Base_Start(&htim1);
+    }
     activeObjectsCount++;
+    startTimeMCS = getTimeMCS();
 }
 
 void TimeStatisticCollector::stopMeasurement()
 {
     int endTimeMCS = getTimeMCS();
+    
     activeObjectsCount--;
     if(activeObjectsCount == 0)
-    {    
-        HAL_TIM_Base_Stop(&htim3);
+    {
+        HAL_TIM_Base_Stop(&htim1);
+        //TIM1->CNT = 0;
         timerOverflowCount = 0;
-        TIM3->CNT = 0;
     }
-    addValue(endTimeMCS - startTimeMCS);
+    
+    int difference = endTimeMCS - startTimeMCS;
+    
+    addValue(difference);
 }
 
 int TimeStatisticCollector::getTimeMCS()
 {
-  unsigned int result = TIM3->CNT;
+  __disable_irq ();
+  unsigned int result = TIM1->CNT; 
   result += timerOverflowCount * 1000;
+  __enable_irq ();
   return result;
 }
 

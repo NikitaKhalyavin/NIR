@@ -82,6 +82,18 @@ void Part::updateTransform(float coordinate, float speed)
 
 	rotateToOwnSC = rotateToGlobalSC.inverse();
 	roughBounding.update(fullTransform, rotateToGlobalSC, rotateToOwnSC);
+    for(int i = 0; i < boxOBBs.size(); i++)
+    {
+        boxOBBs[i].update(fullTransform, rotateToGlobalSC, rotateToOwnSC);
+    }
+    for(int i = 0; i < sphereOBBs.size(); i++)
+    {
+        sphereOBBs[i].update(fullTransform, rotateToGlobalSC, rotateToOwnSC);
+    }
+    for(int i = 0; i < cilinderOBBs.size(); i++)
+    {
+        cilinderOBBs[i].update(fullTransform, rotateToGlobalSC, rotateToOwnSC);
+    }
 }
 
 
@@ -118,6 +130,24 @@ void Part::addBox(const Vector3f sizes, const Vector3f position, const Vector3f 
 	transform.rotate(Eigen::AngleAxisf(angles(2), Vector3f::UnitZ()));
 	OBB_GJK newBox(sizes, transform);
 	boxes.push_back(newBox);
+    
+    Vector3f OBBSize(this->safeDistance, this->safeDistance, this->safeDistance);
+    OBBSize += sizes;
+    
+    Affine3f OBB_Transform = Affine3f::Identity();
+	OBB_Transform.rotate(Eigen::AngleAxisf(angles(0), Vector3f::UnitX()));
+	OBB_Transform.rotate(Eigen::AngleAxisf(angles(1), Vector3f::UnitY()));
+	OBB_Transform.rotate(Eigen::AngleAxisf(angles(2), Vector3f::UnitZ()));
+	Matrix3f OBB_Rotate;
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			OBB_Rotate(i, j) = OBB_Transform(i, j);
+		}
+	}
+    OBB newOBB(OBBSize, position, OBB_Rotate);
+    boxOBBs.push_back(newOBB);
 }
 
 void Part::addSphere(float radius, const Vector3f position, const Vector3f angles)
@@ -129,6 +159,24 @@ void Part::addSphere(float radius, const Vector3f position, const Vector3f angle
 	transform.rotate(Eigen::AngleAxisf(angles(2), Vector3f::UnitZ()));
 	Sphere_GJK newSphere(radius, transform);
 	spheres.push_back(newSphere);
+    
+    Vector3f OBBSize(this->safeDistance + radius, this->safeDistance + radius, this->safeDistance + radius);
+    
+        Affine3f OBB_Transform = Affine3f::Identity();
+	OBB_Transform.rotate(Eigen::AngleAxisf(angles(0), Vector3f::UnitX()));
+	OBB_Transform.rotate(Eigen::AngleAxisf(angles(1), Vector3f::UnitY()));
+	OBB_Transform.rotate(Eigen::AngleAxisf(angles(2), Vector3f::UnitZ()));
+	Matrix3f OBB_Rotate;
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			OBB_Rotate(i, j) = OBB_Transform(i, j);
+		}
+	}
+    
+    OBB newOBB(OBBSize, position, OBB_Rotate);
+    sphereOBBs.push_back(newOBB);
 }
 
 void Part::addCilinder(float  radius, float highest, const Vector3f position, const Vector3f angles)
@@ -140,6 +188,23 @@ void Part::addCilinder(float  radius, float highest, const Vector3f position, co
 	transform.rotate(Eigen::AngleAxisf(angles(2), Vector3f::UnitZ()));
 	Cilinder_GJK newCilinder(radius, highest, transform);
 	cilinders.push_back(newCilinder);
+    
+    Vector3f OBBSize = Vector3f(this->safeDistance + radius, this->safeDistance + radius, this->safeDistance + highest);
+    
+        Affine3f OBB_Transform = Affine3f::Identity();
+	OBB_Transform.rotate(Eigen::AngleAxisf(angles(0), Vector3f::UnitX()));
+	OBB_Transform.rotate(Eigen::AngleAxisf(angles(1), Vector3f::UnitY()));
+	OBB_Transform.rotate(Eigen::AngleAxisf(angles(2), Vector3f::UnitZ()));
+	Matrix3f OBB_Rotate;
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			OBB_Rotate(i, j) = OBB_Transform(i, j);
+		}
+	}
+    OBB newOBB(OBBSize, position, OBB_Rotate);
+    cilinderOBBs.push_back(newOBB);
 }
 
 bool Part::checkRoughBoundingCollision(const Part& other) const
@@ -205,32 +270,41 @@ float Part::getNextCollisionTimeForPairOfVolumes(const Part& other, const T1& ow
 	
 
 template <typename T>
-float Part::getNextCollisionTimeForVolume(const Part& other, const T& volume) const
+float Part::getNextCollisionTimeForVolume(const Part& other, const T& volume, const OBB& volumeOBB) const
 {
 	float minTime = INFINITY;
 	for (int i = 0; i < other.boxes.size(); i++)
 	{
-		float pairCollisionTime = getNextCollisionTimeForPairOfVolumes(other, volume, other.boxes[i]);
-		if(pairCollisionTime < minTime)
-		{
-			minTime = pairCollisionTime;
-		}
+        if(volumeOBB.checkCollisionBySAT(other.boxOBBs[i]))
+        {
+            float pairCollisionTime = getNextCollisionTimeForPairOfVolumes(other, volume, other.boxes[i]);
+            if(pairCollisionTime < minTime)
+            {
+                minTime = pairCollisionTime;
+            }
+        }
 	}
 	for (int i = 0; i < other.spheres.size(); i++)
 	{
-		float pairCollisionTime = getNextCollisionTimeForPairOfVolumes(other, volume, other.spheres[i]);
-		if(pairCollisionTime < minTime)
-		{
-			minTime = pairCollisionTime;
-		}
+		if(volumeOBB.checkCollisionBySAT(other.sphereOBBs[i]))
+        {
+            float pairCollisionTime = getNextCollisionTimeForPairOfVolumes(other, volume, other.spheres[i]);
+            if(pairCollisionTime < minTime)
+            {
+                minTime = pairCollisionTime;
+            }
+        }
 	}
 	for (int i = 0; i < other.cilinders.size(); i++)
 	{
-		float pairCollisionTime = getNextCollisionTimeForPairOfVolumes(other, volume, other.cilinders[i]);
-		if(pairCollisionTime < minTime)
-		{
-			minTime = pairCollisionTime;
-		}
+		if(volumeOBB.checkCollisionBySAT(other.cilinderOBBs[i]))
+        {
+            float pairCollisionTime = getNextCollisionTimeForPairOfVolumes(other, volume, other.cilinders[i]);
+            if(pairCollisionTime < minTime)
+            {
+                minTime = pairCollisionTime;
+            }
+        }
 	}
 	return minTime;
 }
@@ -243,7 +317,7 @@ float Part::getNextCollisionTime(const Part& other) const
 
 	for (int i = 0; i < this->spheres.size(); i++)
 	{
-		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->spheres[i]);
+		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->spheres[i], this->sphereOBBs[i]);
         if(pairCollisionTime < minTime)
 		{
 			minTime = pairCollisionTime;
@@ -251,7 +325,7 @@ float Part::getNextCollisionTime(const Part& other) const
 	}
     for (int i = 0; i < this->boxes.size(); i++)
 	{
-		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->boxes[i]);
+		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->boxes[i], this->boxOBBs[i]);
 		if(pairCollisionTime < minTime)
 		{
 			minTime = pairCollisionTime;
@@ -259,7 +333,7 @@ float Part::getNextCollisionTime(const Part& other) const
 	}
 	for (int i = 0; i < this->cilinders.size(); i++)
 	{
-		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->cilinders[i]);
+		float pairCollisionTime = getNextCollisionTimeForVolume(other, this->cilinders[i], this->cilinderOBBs[i]);
 		if(pairCollisionTime < minTime)
 		{
 			minTime = pairCollisionTime;

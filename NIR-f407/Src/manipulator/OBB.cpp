@@ -19,6 +19,20 @@ OBB::OBB(const Vector3f sizes, const Vector3f centerPosition, const Matrix3f rot
 	turnToLocalSC = Matrix3f::Identity();
 }
 
+void OBB::copy(const OBB& other)
+{
+    this->sizes = other.sizes;
+    this->centerPosition = other.centerPosition;
+    for(int i = 0; i < numberOfDims; i++)
+    {
+        this->guideVectors[i] = other.guideVectors[i];
+    }
+
+    this->sizes = other.sizes;
+    this->sizes = other.sizes;
+
+}
+
 void OBB::create(const Vector3f sizes, const Vector3f centerPosition, const Matrix3f rotation)
 {
 	this->sizes = sizes / 2;
