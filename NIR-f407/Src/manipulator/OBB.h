@@ -24,8 +24,6 @@ private:
 
 	bool checkCollisionByGuideVector(const OBB& other, unsigned int vectorNumber) const;
 	bool checkCollisionByGSK_Vector(const OBB& other, Vector3f& GSK_Vector) const;
-    
-    void copy(const OBB& other);
 
 public:
 
@@ -33,16 +31,7 @@ public:
 	//OBB(const OBB& input) = default;
 	OBB(const Vector3f sizes, const Vector3f centerPosition, const Matrix3f rotation);
 	void create(const Vector3f sizes, const Vector3f centerPosition, const Matrix3f rotation);
-    OBB (const OBB& other) 
-    {
-        copy(other);
-    }
-	OBB& operator = (const OBB& other)
-    {
-        copy(other);
-        return *this;
-    }
-
+	
 	void update(const Affine3f& transformToGSK, const Matrix3f& rotateToGSK, const Matrix3f& rotateToPartSC);
 	bool checkCollisionBySAT(const OBB& other) const;
 };

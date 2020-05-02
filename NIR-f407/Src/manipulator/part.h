@@ -26,22 +26,17 @@ private:
 	Vector3f movingAxis;
 
 	std::vector<Cilinder_GJK> cilinders;
-    std::vector<OBB> cilinderOBBs;
 	std::vector<Sphere_GJK> spheres;
-	std::vector<OBB> sphereOBBs;
-    std::vector<OBB_GJK> boxes;
-    std::vector<OBB> boxOBBs;
+	std::vector<OBB_GJK> boxes;
 
 	float minPosition;
 	float maxPosition;
 
 	template <typename T>
-	float getNextCollisionTimeForVolume(const Part& other, const T& volume, const OBB& volumeOBB) const;
+	float getNextCollisionTimeForVolume(const Part& other, const T& volume) const;
 
 	template <typename T1, typename T2>
 	float getNextCollisionTimeForPairOfVolumes(const Part& other, const T1& ownVolume, const T2& otherVolume) const;
-    
-    const float safeDistance = 1;
 
 	
 public:
