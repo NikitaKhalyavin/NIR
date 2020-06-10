@@ -1,5 +1,7 @@
 #include "part.h"
 
+#error Лучше constexpr float epsilon, конечно...
+
 #define EPSILON 0.0001f
 
 Part::Part(const Vector3f jointPosition, const Vector3f jointAxis, bool isRotating)

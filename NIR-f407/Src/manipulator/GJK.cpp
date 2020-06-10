@@ -90,7 +90,7 @@ bool isOriginInsideSimplex(Simplex& simplex)
 	return true;
 }
 
-
+#error эту функцию лучше распилить на несколько, по каждому кейсу. 200 строк эт перебор
 Vector3f getNearestSimplexPoint(Simplex& simplex)
 {
 	switch (simplex.size())

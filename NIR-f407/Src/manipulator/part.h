@@ -31,6 +31,7 @@ private:
 
 	float minPosition;
 	float maxPosition;
+    
 
 	template <typename T>
 	float getNextCollisionTimeForVolume(const Part& other, const T& volume) const;
